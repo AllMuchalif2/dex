@@ -41,3 +41,7 @@ Aplikasi Pokedex mobile-first berbasis web yang mereplikasi fungsionalitas DataD
 - Gunakan kata-kata sederhana dalam bahasa Indonesia untuk memberikan perintah atau komentar.
 - Setiap kode harus didokumentasikan.
 - Gunakan struktur best practices untuk penamaan file dan folder.
+
+## 6. Testting
+
+- just manual testing by user

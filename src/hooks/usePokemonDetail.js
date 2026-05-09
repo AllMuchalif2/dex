@@ -1,7 +1,16 @@
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { fetchPokemonDetail, fetchPokemonSpecies } from '../api/pokeapi';
+import { fetchPokemonDetail, fetchPokemonSpecies, fetchAllPokemonNames } from '../api/pokeapi';
 
 const STALE = 24 * 60 * 60 * 1000;
+
+// Fetch semua nama pokemon sekali, di-cache 24h
+export function useAllPokemonNames() {
+  return useQuery({
+    queryKey: ['all-pokemon-names'],
+    queryFn: fetchAllPokemonNames,
+    staleTime: STALE,
+  });
+}
 
 // Hook detail satu pokemon berdasarkan id atau nama
 export function usePokemonDetail(idOrName) {
