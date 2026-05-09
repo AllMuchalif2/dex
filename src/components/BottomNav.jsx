@@ -14,8 +14,9 @@ export default function BottomNav() {
   // Sembunyikan nav di halaman detail
   if (location.pathname.startsWith('/pokemon/')) return null;
 
+
   return (
-    <nav className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 flex z-50">
+    <nav className="md:hidden fixed bottom-0 left-1/2 -translate-x-1/2 w-full max-w-[430px] bg-white border-t border-gray-100 flex z-50">
       {TABS.map(({ path, label, Icon }) => {
         const active = location.pathname === path;
         return (

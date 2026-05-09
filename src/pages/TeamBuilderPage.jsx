@@ -20,25 +20,24 @@ export default function TeamBuilderPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white px-4 pt-10 pb-4 border-b border-gray-100">
-        <div className="flex items-center justify-between">
+      <div className="bg-white px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 flex items-center justify-between">
+        <div>
           <h1 className="text-2xl font-bold text-gray-900">Tim Saya</h1>
-          {team.length > 0 && (
-            <button
-              id="btn-clear-team"
-              onClick={() => { clearTeam(); toast.success('Tim dikosongkan'); }}
-              className="text-xs text-red-400 font-medium flex items-center gap-1"
-            >
-              <FaTrash size={11} /> Kosongkan
-            </button>
-          )}
+          <p className="text-sm text-gray-400 mt-0.5">{team.length}/6 Pokemon</p>
         </div>
-        <p className="text-sm text-gray-400 mt-1">{team.length}/6 Pokemon</p>
+        {team.length > 0 && (
+          <button
+            id="btn-clear-team"
+            onClick={() => { clearTeam(); toast.success('Tim dikosongkan'); }}
+            className="text-xs text-red-400 font-medium flex items-center gap-1"
+          >
+            <FaTrash size={11} /> Kosongkan
+          </button>
+        )}
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-5 pb-24">
-        {/* Grid 6 slot */}
-        <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="flex-1 overflow-y-auto px-4 py-5 pb-24 md:pb-8 md:px-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {SLOTS.map((_, i) => {
             const pokemon = team[i];
             return (
@@ -85,7 +84,6 @@ export default function TeamBuilderPage() {
           })}
         </div>
 
-        {/* Pesan kosong */}
         {team.length === 0 && (
           <p className="text-center text-gray-400 text-sm">
             Tim kamu kosong. Cari Pokemon di tab Pokedex dan tambahkan ke tim.

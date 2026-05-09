@@ -49,10 +49,10 @@ export default function DetailPage() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex flex-col min-h-full"
+      className="flex flex-col md:flex-row min-h-svh"
     >
-      {/* Header dengan warna tipe */}
-      <div className="relative px-4 pt-12 pb-6" style={{ backgroundColor: light }}>
+      {/* Panel kiri: header + gambar (sticky di desktop) */}
+      <div className="relative px-4 pt-12 pb-6 md:w-80 md:min-h-svh md:sticky md:top-0 md:flex md:flex-col md:justify-center md:shrink-0" style={{ backgroundColor: light }}>
         <button
           id="btn-back"
           onClick={() => navigate(-1)}
@@ -74,12 +74,12 @@ export default function DetailPage() {
           alt={pokemon.name}
           width={180}
           height={180}
-          className="mx-auto mt-2 drop-shadow-md"
+          className="mx-auto mt-2 drop-shadow-md md:w-[220px] md:h-[220px]"
         />
       </div>
 
-      {/* Konten detail */}
-      <div className="flex-1 bg-white rounded-t-3xl -mt-4 px-5 pt-6 pb-10">
+      {/* Panel kanan: detail */}
+      <div className="flex-1 bg-white md:rounded-none rounded-t-3xl -mt-4 md:mt-0 px-5 md:px-8 pt-6 pb-24 md:pb-10 md:overflow-y-auto">
         {/* Deskripsi */}
         {flavorText && (
           <p className="text-gray-500 text-sm text-center mb-5 leading-relaxed">{flavorText}</p>

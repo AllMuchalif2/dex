@@ -58,7 +58,7 @@ export default function PokedexPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white px-4 pt-10 pb-3 border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-white px-4 pt-10 pb-3 md:pt-6 border-b border-gray-100 sticky top-0 z-10">
         <h1 className="text-2xl font-bold text-gray-900 mb-3">Pokedex</h1>
         <div className="flex items-center gap-2 bg-neutral-bg rounded-xl px-3 py-2">
           <FaMagnifyingGlass className="text-gray-400 shrink-0" />
@@ -74,14 +74,14 @@ export default function PokedexPage() {
       </div>
 
       {/* Konten */}
-      <div className="flex-1 overflow-y-auto px-4 py-4 pb-24">
+      <div className="flex-1 overflow-y-auto px-4 py-4 pb-24 md:pb-8 md:px-6">
         {/* Hasil pencarian */}
         {query.trim() && (
           <div className="mb-4">
             {searching ? (
               <LoadingSpinner size="sm" />
             ) : searchResult ? (
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
                 <PokemonCard
                   id={searchResult.id}
                   name={searchResult.name}
@@ -101,7 +101,7 @@ export default function PokedexPage() {
               <LoadingSpinner />
             ) : (
               <>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
                   {cards.map((p) => (
                     <PokemonCard key={p.id} id={p.id} name={p.name} types={p.types} />
                   ))}

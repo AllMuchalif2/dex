@@ -56,7 +56,7 @@ export default function AIChatPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white px-4 pt-10 pb-4 border-b border-gray-100 flex items-center justify-between">
+      <div className="bg-white px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">AI Advisor</h1>
           <p className="text-xs text-gray-400 mt-0.5">
@@ -111,6 +111,7 @@ export default function AIChatPage() {
 
       {/* Area pesan */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-4 flex flex-col gap-3">
+        <div className="w-full max-w-2xl mx-auto flex flex-col gap-3 flex-1">
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full text-center gap-3 text-gray-400">
             <FaRobot size={40} className="opacity-30" />
@@ -149,11 +150,13 @@ export default function AIChatPage() {
           </div>
         )}
 
-        <div ref={bottomRef} />
+          <div ref={bottomRef} />
+        </div>
       </div>
 
       {/* Input pesan */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3 pb-24 flex gap-2">
+      <div className="bg-white border-t border-gray-100 px-4 py-3 pb-24 md:pb-4 flex gap-2">
+        <div className="w-full max-w-2xl mx-auto flex gap-2">
         <input
           id="input-chat"
           type="text"
@@ -171,6 +174,7 @@ export default function AIChatPage() {
         >
           <FaPaperPlane size={14} />
         </button>
+        </div>
       </div>
     </div>
   );
