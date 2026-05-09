@@ -2,20 +2,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FaArrowLeft, FaPlus, FaCheck } from 'react-icons/fa6';
 import toast from 'react-hot-toast';
-import { usePokemonDetail, usePokemonSpecies } from '../hooks/usePokemonDetail';
+import { usePokemonDetail } from '../hooks/usePokemonDetail';
+import { usePokemonDescription } from '../hooks/usePokemonDescription';
 import { getTypeColor } from '../utils/typeColors';
 import { formatId, formatName, formatHeight, formatWeight, getSpriteUrl } from '../utils/formatters';
 import TypeBadge from '../components/TypeBadge';
 import StatBar from '../components/StatBar';
 import LoadingSpinner from '../components/LoadingSpinner';
 import useTeamStore from '../store/teamStore';
+import useFilterStore from '../store/filterStore';
 
 export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data: pokemon, isLoading, isError } = usePokemonDetail(id);
-  const { data: species } = usePokemonSpecies(id);
   const { team, addToTeam } = useTeamStore();
+  const { selectedVersion } = useFilterStore();
+  const { description } = usePokemonDescription(id, selectedVersion);
 
   if (isLoading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
   if (isError || !pokemon) return (
@@ -29,9 +32,6 @@ export default function DetailPage() {
   const { bg, light } = getTypeColor(primaryType);
   const inTeam = team.some((p) => p.id === pokemon.id);
 
-  const flavorText = species?.flavor_text_entries
-    ?.find((e) => e.language.name === 'en')
-    ?.flavor_text.replace(/\f/g, ' ') ?? '';
 
   function handleAddToTeam() {
     const success = addToTeam({
@@ -81,8 +81,8 @@ export default function DetailPage() {
       {/* Panel kanan: detail */}
       <div className="flex-1 bg-white md:rounded-none rounded-t-3xl -mt-4 md:mt-0 px-5 md:px-8 pt-6 pb-24 md:pb-10 md:overflow-y-auto">
         {/* Deskripsi */}
-        {flavorText && (
-          <p className="text-gray-500 text-sm text-center mb-5 leading-relaxed">{flavorText}</p>
+        {description && (
+          <p className="text-gray-500 text-sm text-center mb-5 leading-relaxed">{description}</p>
         )}
 
         {/* Info fisik */}

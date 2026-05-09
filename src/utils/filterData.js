@@ -1,3 +1,61 @@
+// Range ID per generasi (PokeAPI format)
+export const GEN_RANGES = {
+  'generation-i':    [1, 151],
+  'generation-ii':   [152, 251],
+  'generation-iii':  [252, 386],
+  'generation-iv':   [387, 493],
+  'generation-v':    [494, 649],
+  'generation-vi':   [650, 721],
+  'generation-vii':  [722, 809],
+  'generation-viii': [810, 905],
+  'generation-ix':   [906, 1010],
+};
+
+// Mapping versi game → nama generasi PokeAPI
+export const VERSION_TO_GEN = {
+  red: 'generation-i', blue: 'generation-i', yellow: 'generation-i',
+  gold: 'generation-ii', silver: 'generation-ii', crystal: 'generation-ii',
+  ruby: 'generation-iii', sapphire: 'generation-iii', emerald: 'generation-iii',
+  firered: 'generation-i', leafgreen: 'generation-i',
+  diamond: 'generation-iv', pearl: 'generation-iv', platinum: 'generation-iv',
+  heartgold: 'generation-ii', soulsilver: 'generation-ii',
+  black: 'generation-v', white: 'generation-v', 'black-2': 'generation-v', 'white-2': 'generation-v',
+  x: 'generation-vi', y: 'generation-vi',
+  'omega-ruby': 'generation-iii', 'alpha-sapphire': 'generation-iii',
+  sun: 'generation-vii', moon: 'generation-vii', 'ultra-sun': 'generation-vii', 'ultra-moon': 'generation-vii',
+  sword: 'generation-viii', shield: 'generation-viii',
+  scarlet: 'generation-ix', violet: 'generation-ix',
+};
+
+export const GAME_VERSIONS = [
+  { value: 'red', label: 'Red' }, { value: 'blue', label: 'Blue' }, { value: 'yellow', label: 'Yellow' },
+  { value: 'gold', label: 'Gold' }, { value: 'silver', label: 'Silver' }, { value: 'crystal', label: 'Crystal' },
+  { value: 'ruby', label: 'Ruby' }, { value: 'sapphire', label: 'Sapphire' }, { value: 'emerald', label: 'Emerald' },
+  { value: 'firered', label: 'FireRed' }, { value: 'leafgreen', label: 'LeafGreen' },
+  { value: 'diamond', label: 'Diamond' }, { value: 'pearl', label: 'Pearl' }, { value: 'platinum', label: 'Platinum' },
+  { value: 'heartgold', label: 'HeartGold' }, { value: 'soulsilver', label: 'SoulSilver' },
+  { value: 'black', label: 'Black' }, { value: 'white', label: 'White' },
+  { value: 'black-2', label: 'Black 2' }, { value: 'white-2', label: 'White 2' },
+  { value: 'x', label: 'X' }, { value: 'y', label: 'Y' },
+  { value: 'omega-ruby', label: 'Omega Ruby' }, { value: 'alpha-sapphire', label: 'Alpha Sapphire' },
+  { value: 'sun', label: 'Sun' }, { value: 'moon', label: 'Moon' },
+  { value: 'ultra-sun', label: 'Ultra Sun' }, { value: 'ultra-moon', label: 'Ultra Moon' },
+  { value: 'sword', label: 'Sword' }, { value: 'shield', label: 'Shield' },
+  { value: 'scarlet', label: 'Scarlet' }, { value: 'violet', label: 'Violet' },
+];
+
+export const GEN_OPTIONS = [
+  { value: 'generation-i',    label: 'Generation I' },
+  { value: 'generation-ii',   label: 'Generation II' },
+  { value: 'generation-iii',  label: 'Generation III' },
+  { value: 'generation-iv',   label: 'Generation IV' },
+  { value: 'generation-v',    label: 'Generation V' },
+  { value: 'generation-vi',   label: 'Generation VI' },
+  { value: 'generation-vii',  label: 'Generation VII' },
+  { value: 'generation-viii', label: 'Generation VIII' },
+  { value: 'generation-ix',   label: 'Generation IX' },
+];
+
 export const TYPES = [
   'normal', 'fire', 'water', 'electric', 'grass', 'ice',
   'fighting', 'poison', 'ground', 'flying', 'psychic', 'bug',
