@@ -6,22 +6,30 @@ export function usePokemonDescription(pokemonId, selectedGameVersion) {
 
   if (!species) return { description: '', isLoading, isError };
 
-  const enEntries = species.flavor_text_entries.filter((e) => e.language.name === 'en');
+  const enEntries = species.flavor_text_entries.filter(
+    (e) => e.language.name === 'en',
+  );
 
   let description = '';
+  let versionName = '';
 
   if (selectedGameVersion) {
     const match = enEntries.find((e) => e.version.name === selectedGameVersion);
-    description = match?.flavor_text ?? '';
+    if (match) {
+      description = match.flavor_text;
+      versionName = match.version.name;
+    }
   }
 
-  // Fallback ke entry terakhir jika versi tidak tersedia
   if (!description && enEntries.length > 0) {
-    description = enEntries[enEntries.length - 1]?.flavor_text ?? '';
+    const fallback = enEntries[enEntries.length - 1];
+    description = fallback.flavor_text;
+    versionName = fallback.version.name;
   }
 
   return {
     description: description.replace(/\f/g, ' ').trim(),
+    versionName,
     isLoading,
     isError,
   };

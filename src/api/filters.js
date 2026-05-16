@@ -8,3 +8,14 @@ export async function fetchPokemonIdsByType(type) {
     .filter((id) => id >= 1 && id <= 1010)
     .sort((a, b) => a - b);
 }
+export async function fetchPokemonIdsByAbility(ability) {
+  const res = await fetch(`https://pokeapi.co/api/v2/ability/${ability}`);
+  if (!res.ok) throw new Error(`Gagal mengambil ability: ${ability}`);
+  const data = await res.json();
+  return data.pokemon
+    .map((p) => ({
+      id: parseInt(p.pokemon.url.split('/').filter(Boolean).pop()),
+      isHidden: p.is_hidden,
+    }))
+    .filter((p) => p.id >= 1 && p.id <= 1010);
+}

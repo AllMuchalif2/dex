@@ -33,17 +33,22 @@ export default function PokedexPage() {
     id: d.data.id, name: d.data.name, types: d.data.types.map((t) => t.type.name),
   }));
 
-  // Infinite scroll — hanya saat tidak ada filter dan search
+  // Infinite scroll
   useEffect(() => {
-    if (isFiltered || isSearching) return;
     const el = loadMoreRef.current;
     if (!el) return;
     const obs = new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && hasNextPage && !isFetchingNextPage) fetchNextPage();
+      if (e.isIntersecting) {
+        if (!isFiltered && !isSearching && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        } else if (isFiltered && hasMore) {
+          setPage((v) => v + 1);
+        }
+      }
     }, { threshold: 0.1 });
     obs.observe(el);
     return () => obs.disconnect();
-  }, [isFiltered, isSearching, hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [isFiltered, isSearching, hasNextPage, isFetchingNextPage, fetchNextPage, hasMore, setPage]);
 
   const isLoadingAny = isFiltered ? filterLoading : listLoading;
 
@@ -114,17 +119,11 @@ export default function PokedexPage() {
               </div>
             )}
 
-            {isFiltered && hasMore && (
-              <div className="flex justify-center mt-6">
-                <button onClick={() => setPage((v) => v + 1)} className="px-6 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-600">
-                  Muat lebih banyak
-                </button>
-              </div>
-            )}
-
-            {!isFiltered && (
-              <div ref={loadMoreRef} className="py-4">
-                {isFetchingNextPage && <LoadingSpinner size="sm" />}
+            {(isFiltered || !isFiltered) && (
+              <div ref={loadMoreRef} className="py-8 flex justify-center">
+                {((!isFiltered && isFetchingNextPage) || (isFiltered && hasMore)) && (
+                  <LoadingSpinner size="sm" />
+                )}
               </div>
             )}
           </>

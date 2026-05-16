@@ -1,5 +1,5 @@
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { fetchPokemonDetail, fetchPokemonSpecies, fetchAllPokemonNames } from '../api/pokeapi';
+import { fetchPokemonDetail, fetchPokemonSpecies, fetchAllPokemonNames, fetchEvolutionChain } from '../api/pokeapi';
 
 const STALE = 24 * 60 * 60 * 1000;
 
@@ -29,6 +29,16 @@ export function usePokemonSpecies(id) {
     queryFn: () => fetchPokemonSpecies(id),
     staleTime: STALE,
     enabled: !!id,
+  });
+}
+
+// Hook rantai evolusi
+export function useEvolutionChain(url) {
+  return useQuery({
+    queryKey: ['evolution-chain', url],
+    queryFn: () => fetchEvolutionChain(url),
+    staleTime: STALE,
+    enabled: !!url,
   });
 }
 

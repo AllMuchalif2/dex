@@ -25,3 +25,9 @@ export async function fetchPokemonSpecies(id) {
   if (!res.ok) throw new Error(`Gagal mengambil spesies: ${id}`);
   return res.json();
 }
+
+export async function fetchEvolutionChain(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('Gagal mengambil rantai evolusi');
+  return res.json();
+}
