@@ -1,7 +1,7 @@
 import useFilterStore from '../store/filterStore';
 import { GAME_VERSIONS, GEN_OPTIONS, TYPES } from '../utils/filterData';
 import { getTypeColor } from '../utils/typeColors';
-import { formatName } from '../utils/formatters';
+import { formatName, STAT_LABELS } from '../utils/formatters';
 import { FaXmark } from 'react-icons/fa6';
 
 const TYPE_OPTIONS = TYPES.map((t) => ({ value: t, label: formatName(t) }));
@@ -38,14 +38,21 @@ export default function FilterBar() {
     selectedType,
     selectedAbility,
     selectedAbilitySlot,
+    selectedGrowthRate,
+    selectedEggGroup,
+    selectedEvYield,
     setSelectedVersion,
     setSelectedGen,
     setSelectedType,
+    setSelectedAbility,
     setSelectedAbilitySlot,
+    setSelectedGrowthRate,
+    setSelectedEggGroup,
+    setSelectedEvYield,
     clearAll,
   } = useFilterStore();
 
-  const hasAny = selectedVersion || selectedGen || selectedType || selectedAbility;
+  const hasAny = selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -76,7 +83,7 @@ export default function FilterBar() {
           <button
             id="btn-clear-filters"
             onClick={clearAll}
-            className="shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-red-50 text-red-400 hover:bg-red-100 transition-colors"
+            className="shrink-0 px-2.5 py-1.5 rounded-xl text-xs font-medium bg-red-50 text-red-400 hover:bg-red-100 transition-colors cursor-pointer"
           >
             <div className="flex items-center gap-1">
               <FaXmark />
@@ -86,13 +93,19 @@ export default function FilterBar() {
       </div>
 
       {selectedAbility && (
-        <div className="flex items-center justify-between bg-accent2/40 px-3 py-2 rounded-2xl border border-primary/5 animate-in fade-in slide-in-from-top-1">
+        <div className="flex items-center justify-between bg-accent2/40 dark:bg-zinc-900/60 px-3 py-2 rounded-2xl border border-primary/5 dark:border-zinc-800 animate-in fade-in slide-in-from-top-1">
           <div className="flex items-center gap-2 overflow-hidden">
-            <span className="text-[9px] font-black text-primary/60 uppercase tracking-tighter">Ability</span>
-            <span className="text-xs font-bold text-gray-700 truncate">{formatName(selectedAbility)}</span>
+            <span className="text-[9px] font-black text-primary/60 dark:text-primary/70 uppercase tracking-tighter shrink-0">Ability</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-zinc-200 truncate">{formatName(selectedAbility)}</span>
+            <button
+              onClick={() => setSelectedAbility(null)}
+              className="text-gray-400 dark:text-zinc-550 hover:text-red-400 dark:hover:text-red-450 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+            >
+              <FaXmark size={10} />
+            </button>
           </div>
           
-          <div className="flex bg-white/60 p-0.5 rounded-lg border border-primary/10 shadow-sm">
+          <div className="flex bg-white/60 dark:bg-zinc-800/60 p-0.5 rounded-lg border border-primary/10 dark:border-zinc-700 shadow-sm">
             {[
               { id: 'all', label: 'All' },
               { id: 'normal', label: 'Normal' },
@@ -101,16 +114,61 @@ export default function FilterBar() {
               <button
                 key={slot.id}
                 onClick={() => setSelectedAbilitySlot(slot.id)}
-                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all ${
+                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer ${
                   selectedAbilitySlot === slot.id 
                     ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105' 
-                    : 'text-gray-400 hover:text-gray-600'
+                    : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-400'
                 }`}
               >
                 {slot.label}
               </button>
             ))}
           </div>
+        </div>
+      )}
+
+      {selectedGrowthRate && (
+        <div className="flex items-center justify-between bg-accent2/40 dark:bg-zinc-900/60 px-3 py-2 rounded-2xl border border-primary/5 dark:border-zinc-800 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-[9px] font-black text-primary/60 dark:text-primary/70 uppercase tracking-tighter shrink-0">Growth Rate</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-zinc-200 truncate">{formatName(selectedGrowthRate)}</span>
+          </div>
+          <button
+            onClick={() => setSelectedGrowthRate(null)}
+            className="text-gray-400 dark:text-zinc-550 hover:text-red-400 dark:hover:text-red-450 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+          >
+            <FaXmark size={12} />
+          </button>
+        </div>
+      )}
+
+      {selectedEggGroup && (
+        <div className="flex items-center justify-between bg-accent2/40 dark:bg-zinc-900/60 px-3 py-2 rounded-2xl border border-primary/5 dark:border-zinc-800 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-[9px] font-black text-primary/60 dark:text-primary/70 uppercase tracking-tighter shrink-0">Egg Group</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-zinc-200 truncate">{formatName(selectedEggGroup)}</span>
+          </div>
+          <button
+            onClick={() => setSelectedEggGroup(null)}
+            className="text-gray-400 dark:text-zinc-550 hover:text-red-400 dark:hover:text-red-450 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+          >
+            <FaXmark size={12} />
+          </button>
+        </div>
+      )}
+
+      {selectedEvYield && (
+        <div className="flex items-center justify-between bg-accent2/40 dark:bg-zinc-900/60 px-3 py-2 rounded-2xl border border-primary/5 dark:border-zinc-800 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-[9px] font-black text-primary/60 dark:text-primary/70 uppercase tracking-tighter shrink-0">EV Yield</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-zinc-200 truncate">{STAT_LABELS[selectedEvYield] || selectedEvYield}</span>
+          </div>
+          <button
+            onClick={() => setSelectedEvYield(null)}
+            className="text-gray-400 dark:text-zinc-550 hover:text-red-400 dark:hover:text-red-450 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+          >
+            <FaXmark size={12} />
+          </button>
         </div>
       )}
     </div>

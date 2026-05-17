@@ -1,11 +1,25 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { GEN_RANGES, VERSION_TO_GEN, TYPES } from '../utils/filterData';
+import { EV_YIELD_MAP } from '../utils/evYieldData';
 
 
 // Fungsi filter utama (AND logic): interseksi semua kondisi aktif
 // typeIds: Set<number>, abilityData: Array<{id: number, isHidden: boolean}>
-export function computeFilteredIds(selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, typeIds, abilityData) {
+export function computeFilteredIds(
+  selectedVersion,
+  selectedGen,
+  selectedType,
+  selectedAbility,
+  selectedAbilitySlot,
+  selectedGrowthRate,
+  selectedEggGroup,
+  typeIds,
+  abilityData,
+  growthRateIds,
+  eggGroupIds,
+  selectedEvYield
+) {
   let result = null;
 
   // Step 1: Filter Generasi
@@ -49,8 +63,36 @@ export function computeFilteredIds(selectedVersion, selectedGen, selectedType, s
       : abilitySet;
   }
 
-  const hasFilter = !!selectedVersion || !!selectedGen || !!selectedType || !!selectedAbility;
-  if (!hasFilter) return null; // null = tampilkan semua
+  // Step 5: Filter Growth Rate
+  if (selectedGrowthRate && growthRateIds) {
+    const grSet = new Set(growthRateIds);
+    result = result
+      ? new Set([...result].filter((id) => grSet.has(id)))
+      : grSet;
+  }
+
+  // Step 6: Filter Egg Group
+  if (selectedEggGroup && eggGroupIds) {
+    const egSet = new Set(eggGroupIds);
+    result = result
+      ? new Set([...result].filter((id) => egSet.has(id)))
+      : egSet;
+  }
+
+  // Step 7: Filter EV Yield
+  if (selectedEvYield) {
+    const evSet = new Set(
+      Object.keys(EV_YIELD_MAP)
+        .filter((id) => EV_YIELD_MAP[id]?.[selectedEvYield] > 0)
+        .map(Number)
+    );
+    result = result
+      ? new Set([...result].filter((id) => evSet.has(id)))
+      : evSet;
+  }
+
+  const hasFilter = !!selectedVersion || !!selectedGen || !!selectedType || !!selectedAbility || !!selectedGrowthRate || !!selectedEggGroup || !!selectedEvYield;
+  if (!hasFilter) return null;
 
   return result ? [...result].sort((a, b) => a - b) : [];
 }
@@ -63,20 +105,29 @@ const useFilterStore = create(
       selectedGen: null,
       selectedType: null,
       selectedAbility: null,
-      selectedAbilitySlot: 'all', // 'all', 'normal', 'hidden'
+      selectedAbilitySlot: 'all',
+      selectedGrowthRate: null,
+      selectedEggGroup: null,
+      selectedEvYield: null,
 
       setSelectedVersion: (v) => set({ selectedVersion: v }),
       setSelectedGen: (g) => set({ selectedGen: g }),
       setSelectedType: (t) => set({ selectedType: t }),
       setSelectedAbility: (a) => set({ selectedAbility: a, selectedAbilitySlot: 'all' }),
       setSelectedAbilitySlot: (s) => set({ selectedAbilitySlot: s }),
+      setSelectedGrowthRate: (g) => set({ selectedGrowthRate: g }),
+      setSelectedEggGroup: (e) => set({ selectedEggGroup: e }),
+      setSelectedEvYield: (y) => set({ selectedEvYield: y }),
 
       clearAll: () => set({ 
         selectedVersion: null, 
         selectedGen: null, 
         selectedType: null, 
         selectedAbility: null,
-        selectedAbilitySlot: 'all'
+        selectedAbilitySlot: 'all',
+        selectedGrowthRate: null,
+        selectedEggGroup: null,
+        selectedEvYield: null,
       }),
     }),
     { name: 'pokedex-filter-store' }

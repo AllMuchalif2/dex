@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { usePokemonDetail, usePokemonSpecies } from '../hooks/usePokemonDetail';
 import { usePokemonDescription } from '../hooks/usePokemonDescription';
 import { getTypeColor } from '../utils/typeColors';
-import { formatId, formatName, formatHeight, formatWeight, getSpriteUrl, STAT_LABELS } from '../utils/formatters';
+import { formatId, formatName, formatHeight, formatWeight, getSpriteUrl, STAT_LABELS, getIdFromUrl } from '../utils/formatters';
 import TypeBadge from '../components/TypeBadge';
 import StatBar from '../components/StatBar';
 import LoadingSpinner from '../components/LoadingSpinner';
@@ -22,10 +22,10 @@ export default function DetailPage() {
   const navigate = useNavigate();
   const [activeAbilityTab, setActiveAbilityTab] = useState('normal');
   const { data: pokemon, isLoading, isError } = usePokemonDetail(id);
-  const { data: species } = usePokemonSpecies(id);
+  const { data: species } = usePokemonSpecies(pokemon?.species?.name);
   const { team, addToTeam } = useTeamStore();
-  const { selectedVersion, setSelectedAbility } = useFilterStore();
-  const { description, versionName } = usePokemonDescription(id, selectedVersion);
+  const { selectedVersion, setSelectedAbility, setSelectedGrowthRate, setSelectedEggGroup, setSelectedEvYield } = useFilterStore();
+  const { description, versionName } = usePokemonDescription(pokemon?.species?.name || id, selectedVersion);
 
   if (isLoading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
   if (isError || !pokemon) return (
@@ -38,7 +38,6 @@ export default function DetailPage() {
   const primaryType = pokemon.types[0].type.name;
   const { bg, light } = getTypeColor(primaryType);
   const inTeam = team.some((p) => p.id === pokemon.id);
-
 
   function handleAddToTeam() {
     const success = addToTeam({
@@ -70,8 +69,26 @@ export default function DetailPage() {
     toast.success(`Filter: Ability ${formatName(abilityName)}`);
   }
 
-  const varieties = pokemon.forms.length > 1 || (species?.varieties?.length > 1) 
-    ? species.varieties.filter(v => !v.is_default)
+  function handleGrowthRateClick(growthRate) {
+    setSelectedGrowthRate(growthRate);
+    navigate('/');
+    toast.success(`Filter: Growth Rate ${formatName(growthRate)}`);
+  }
+
+  function handleEggGroupClick(eggGroup) {
+    setSelectedEggGroup(eggGroup);
+    navigate('/');
+    toast.success(`Filter: Egg Group ${formatName(eggGroup)}`);
+  }
+
+  function handleEvYieldClick(statName) {
+    setSelectedEvYield(statName);
+    navigate('/');
+    toast.success(`Filter: EV Yield ${STAT_LABELS[statName] || statName}`);
+  }
+
+  const varieties = species?.varieties?.length > 1
+    ? species.varieties.filter((v) => v.pokemon.name !== pokemon.name)
     : [];
 
   return (
@@ -81,17 +98,23 @@ export default function DetailPage() {
       className="flex flex-col md:flex-row min-h-svh"
     >
       {/* Panel kiri: header + gambar (sticky di desktop) */}
-      <div className="relative px-4 pt-12 pb-6 md:w-80 md:min-h-svh md:sticky md:top-0 md:flex md:flex-col md:justify-center md:shrink-0" style={{ backgroundColor: light }}>
+      <div className="relative px-4 pt-12 pb-6 md:w-80 md:min-h-svh md:sticky md:top-0 md:flex md:flex-col md:justify-center md:shrink-0 dark:brightness-95 dark:opacity-90" style={{ backgroundColor: light }}>
         <button
           id="btn-back"
-          onClick={() => navigate(-1)}
-          className="absolute top-12 left-4 p-2 rounded-full bg-white/60 backdrop-blur-sm"
+          onClick={() => {
+            if (window.history.state && window.history.state.idx > 0) {
+              navigate(-1);
+            } else {
+              navigate('/');
+            }
+          }}
+          className="absolute top-12 left-4 p-2 rounded-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm text-gray-700 dark:text-zinc-300 cursor-pointer z-30"
         >
-          <FaArrowLeft size={16} className="text-gray-700" />
+          <FaArrowLeft size={16} />
         </button>
 
         <div className="text-center mt-4">
-          <p className="text-sm font-medium opacity-60">{formatId(pokemon.id)}</p>
+          <p className="text-sm font-medium opacity-60 text-gray-900">{formatId(pokemon.id)}</p>
           <h1 className="text-2xl font-bold text-gray-900">{formatName(pokemon.name)}</h1>
           <div className="flex gap-2 justify-center mt-2">
             {pokemon.types.map((t) => <TypeBadge key={t.type.name} type={t.type.name} />)}
@@ -108,77 +131,86 @@ export default function DetailPage() {
       </div>
 
       {/* Panel kanan: detail */}
-      <div className="flex-1 bg-white md:rounded-none rounded-t-3xl -mt-4 md:mt-0 px-5 md:px-8 pt-6 pb-24 md:pb-10 md:overflow-y-auto">
+      <div className="flex-1 bg-white dark:bg-zinc-950 md:rounded-none rounded-t-3xl -mt-4 md:mt-0 px-5 md:px-8 pt-6 pb-24 md:pb-10 md:overflow-y-auto">
         {/* Deskripsi */}
         {description && (
-          <div className="mb-6 text-center">
-            <p className="text-gray-500 text-sm leading-relaxed mb-2">{description}</p>
-            {versionName && (
-              <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 bg-gray-100 px-2 py-0.5 rounded">
-                Pokemon {formatName(versionName)}
-              </span>
-            )}
+          <div className="mb-6 text-center flex flex-col items-center gap-2">
+            <p className="text-gray-500 dark:text-zinc-400 text-sm leading-relaxed">{description}</p>
+            <div className="flex gap-2 justify-center items-center">
+              {versionName && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                  Pokemon {formatName(versionName)}
+                </span>
+              )}
+              {species?.generation?.name && (
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-zinc-500 bg-gray-100 dark:bg-zinc-900 px-2 py-0.5 rounded">
+                  {formatName(species.generation.name)}
+                </span>
+              )}
+            </div>
           </div>
         )}
 
         {/* Info Grid */}
-        <div className="bg-neutral-bg rounded-2xl p-4 mb-6">
-          <div className="grid grid-cols-3 gap-y-6">
+        <div className="bg-neutral-bg dark:bg-zinc-900 rounded-2xl p-4 mb-6">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-5">
             {/* Row 1: Physical */}
             <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Tinggi</p>
-              <p className="text-sm font-bold text-gray-800">{formatHeight(pokemon.height)}</p>
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Tinggi</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">{formatHeight(pokemon.height)}</p>
             </div>
-            <div className="text-center border-x border-gray-200">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Berat</p>
-              <p className="text-sm font-bold text-gray-800">{formatWeight(pokemon.weight)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Generasi</p>
-              <p className="text-sm font-bold text-gray-800">{formatName(species?.generation?.name ?? '-')}</p>
+            <div className="text-center border-l border-gray-200 dark:border-zinc-800">
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Berat</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">{formatWeight(pokemon.weight)}</p>
             </div>
 
-            <div className="col-span-3 h-px bg-gray-200/50" />
+            <div className="col-span-2 h-px bg-gray-200/50 dark:bg-zinc-800/50" />
 
             {/* Row 2: Training */}
             <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Catch Rate</p>
-              <p className="text-sm font-bold text-gray-800">{species?.capture_rate ?? '-'}</p>
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Catch Rate</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">{species?.capture_rate ?? '-'}</p>
             </div>
-            <div className="text-center border-x border-gray-200">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Happiness</p>
-              <p className="text-sm font-bold text-gray-800">{species?.base_happiness ?? '-'}</p>
+            <div className="text-center border-l border-gray-200 dark:border-zinc-800">
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Happiness</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">{species?.base_happiness ?? '-'}</p>
             </div>
+
+            <div className="col-span-2 h-px bg-gray-200/50 dark:bg-zinc-800/50" />
+
+            {/* Row 3: Stats */}
             <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Base Exp</p>
-              <p className="text-sm font-bold text-gray-800">{pokemon.base_experience ?? '-'}</p>
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Base Exp</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">{pokemon.base_experience ?? '-'}</p>
+            </div>
+            <div className="text-center border-l border-gray-200 dark:border-zinc-800 flex flex-col items-center justify-center">
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">EV Yield</p>
+              {pokemon.stats.some((s) => s.effort > 0) ? (
+                <div className="flex flex-wrap gap-1 justify-center mt-0.5 max-w-full px-1">
+                  {pokemon.stats.filter((s) => s.effort > 0).map((s) => (
+                    <button
+                      key={s.stat.name}
+                      onClick={() => handleEvYieldClick(s.stat.name)}
+                      className="text-[9px] font-black bg-accent2 hover:bg-primary/5 dark:bg-zinc-900/50 dark:hover:bg-primary/10 border border-gray-150 dark:border-zinc-800 hover:border-primary/20 text-gray-700 dark:text-zinc-350 hover:text-primary px-1.5 py-0.5 rounded-lg transition-all active:scale-95 cursor-pointer whitespace-nowrap"
+                    >
+                      {s.effort} {STAT_LABELS[s.stat.name] || s.stat.name}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm font-bold text-gray-800 dark:text-zinc-200">-</p>
+              )}
             </div>
 
-            <div className="col-span-3 h-px bg-gray-200/50" />
+            <div className="col-span-2 h-px bg-gray-200/50 dark:bg-zinc-800/50" />
 
-            {/* Row 3: Biological */}
+            {/* Row 4: Biological */}
             <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Habitat</p>
-              <p className="text-sm font-bold text-gray-800 truncate px-1">{formatName(species?.habitat?.name ?? 'Unknown')}</p>
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Habitat</p>
+              <p className="text-sm font-bold text-gray-800 dark:text-zinc-200 truncate px-1">{formatName(species?.habitat?.name ?? 'Unknown')}</p>
             </div>
-            <div className="text-center border-x border-gray-200">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Growth Rate</p>
-              <p className="text-[11px] font-bold text-gray-800 leading-tight">
-                {species?.growth_rate ? formatName(species.growth_rate.name) : '-'}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Egg Groups</p>
-              <p className="text-[11px] font-bold text-gray-800 leading-tight">
-                {species?.egg_groups?.map((g) => formatName(g.name)).join(', ') || '-'}
-              </p>
-            </div>
-
-            <div className="col-span-3 h-px bg-gray-200/50" />
-
-            {/* Row 4: Special */}
-            <div className="col-span-1 text-center">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">Gender</p>
+            <div className="text-center border-l border-gray-200 dark:border-zinc-800">
+              <p className="text-[10px] text-gray-400 dark:text-zinc-500 uppercase tracking-widest mb-1">Gender</p>
               {isGenderless ? (
                 <p className="text-sm font-bold text-gray-400 uppercase">None</p>
               ) : (
@@ -188,17 +220,13 @@ export default function DetailPage() {
                 </div>
               )}
             </div>
-            <div className="col-span-2 text-center border-l border-gray-200">
-              <p className="text-[10px] text-gray-400 uppercase tracking-widest mb-1.5">EV Yield</p>
-              <p className="text-xs font-bold text-gray-800">{evYield || '-'}</p>
-            </div>
           </div>
         </div>
 
         {/* Ability */}
         {showAbilities && (
           <div className="mb-6">
-            <p className="text-sm font-semibold text-gray-700 mb-3">Kemampuan</p>
+            <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Kemampuan</p>
             {(() => {
               const normal = pokemon.abilities.filter((a) => !a.is_hidden);
               const hidden = pokemon.abilities.find((a) => a.is_hidden);
@@ -209,7 +237,7 @@ export default function DetailPage() {
                       <button
                         key={a.ability.name}
                         onClick={() => handleAbilityClick(a.ability.name)}
-                        className="bg-accent2 hover:bg-primary/5 text-gray-700 hover:text-primary text-xs font-medium px-3 py-2.5 rounded-xl text-center border border-gray-100 hover:border-primary/20 transition-all active:scale-95 shadow-sm sm:shadow-none"
+                        className="bg-accent2 dark:bg-zinc-900/50 hover:bg-primary/5 text-gray-700 dark:text-zinc-350 hover:text-primary text-xs font-medium px-3 py-2.5 rounded-xl text-center border border-gray-100 dark:border-zinc-800 hover:border-primary/20 transition-all active:scale-95 shadow-sm sm:shadow-none cursor-pointer"
                       >
                         {formatName(a.ability.name)}
                       </button>
@@ -218,10 +246,10 @@ export default function DetailPage() {
                   {showHidden && hidden && (
                     <button
                       onClick={() => handleAbilityClick(hidden.ability.name)}
-                      className="bg-gray-50 hover:bg-primary/5 text-gray-500 hover:text-primary text-[11px] font-medium px-3 py-2.5 rounded-xl text-center border border-dashed border-gray-200 hover:border-primary/20 transition-all active:scale-95"
+                      className="bg-gray-50 dark:bg-zinc-900/30 hover:bg-primary/5 text-gray-500 hover:text-primary text-[11px] font-medium px-3 py-2.5 rounded-xl text-center border border-dashed border-gray-200 dark:border-zinc-800 hover:border-primary/20 transition-all active:scale-95 cursor-pointer"
                     >
                       <span className="opacity-60 mr-1">Hidden Ability:</span>
-                      <span className="text-gray-700 font-bold group-hover:text-primary">
+                      <span className="text-gray-700 dark:text-zinc-350 font-bold group-hover:text-primary">
                         {formatName(hidden.ability.name)}
                       </span>
                     </button>
@@ -232,9 +260,40 @@ export default function DetailPage() {
           </div>
         )}
 
+        {/* Growth Rate */}
+        {species?.growth_rate && (
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Laju Pertumbuhan</p>
+            <button
+              onClick={() => handleGrowthRateClick(species.growth_rate.name)}
+              className="w-full bg-accent2 dark:bg-zinc-900/50 hover:bg-primary/5 text-gray-700 dark:text-zinc-350 hover:text-primary text-xs font-semibold px-4 py-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 hover:border-primary/20 transition-all active:scale-95 shadow-sm sm:shadow-none cursor-pointer text-center"
+            >
+              {formatName(species.growth_rate.name)}
+            </button>
+          </div>
+        )}
+
+        {/* Egg Groups */}
+        {species?.egg_groups && species.egg_groups.length > 0 && (
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Kelompok Telur</p>
+            <div className={`grid gap-2 ${species.egg_groups.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+              {species.egg_groups.map((g) => (
+                <button
+                  key={g.name}
+                  onClick={() => handleEggGroupClick(g.name)}
+                  className="w-full bg-accent2 dark:bg-zinc-900/50 hover:bg-primary/5 text-gray-700 dark:text-zinc-350 hover:text-primary text-xs font-semibold px-4 py-2.5 rounded-xl text-center border border-gray-100 dark:border-zinc-800 hover:border-primary/20 transition-all active:scale-95 shadow-sm sm:shadow-none cursor-pointer"
+                >
+                  {formatName(g.name)}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Stats */}
         <div className="mb-8">
-          <p className="text-sm font-semibold text-gray-700 mb-3">Statistik Dasar</p>
+          <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Statistik Dasar</p>
           <div className="flex flex-col gap-2.5">
             {pokemon.stats.map((s) => (
               <StatBar key={s.stat.name} name={s.stat.name} value={s.base_stat} />
@@ -242,22 +301,29 @@ export default function DetailPage() {
           </div>
         </div>
 
+        {/* Type Weaknesses */}
+        <TypeWeaknesses types={pokemon.types.map(t => t.type.name)} />
+
         {/* Varietas / Form Lain */}
         {varieties.length > 0 && (
-          <div className="mb-8">
-            <p className="text-sm font-semibold text-gray-700 mb-3">Varian Lain</p>
+          <div className="mb-8 mt-8">
+            <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Varian Lain</p>
             <div className="flex flex-wrap gap-2">
-              {varieties.map((v) => (
-                <div key={v.pokemon.name} className="px-3 py-1.5 bg-gray-50 border border-gray-100 rounded-lg text-[11px] font-medium text-gray-600">
-                  {formatName(v.pokemon.name)}
-                </div>
-              ))}
+              {varieties.map((v) => {
+                const varId = getIdFromUrl(v.pokemon.url);
+                return (
+                  <button
+                    key={v.pokemon.name}
+                    onClick={() => navigate(`/pokemon/${varId}`)}
+                    className="px-3 py-1.5 bg-gray-50 dark:bg-zinc-900 border border-gray-100 dark:border-zinc-800 hover:border-primary/20 hover:text-primary rounded-lg text-[11px] font-semibold text-gray-600 dark:text-zinc-400 transition-all active:scale-95 cursor-pointer"
+                  >
+                    {formatName(v.pokemon.name)}
+                  </button>
+                );
+              })}
             </div>
           </div>
         )}
-
-        {/* Type Weaknesses */}
-        <TypeWeaknesses types={pokemon.types.map(t => t.type.name)} />
 
         {/* Evolution Chain */}
         {species?.evolution_chain && <EvolutionChain url={species.evolution_chain.url} />}
@@ -267,9 +333,9 @@ export default function DetailPage() {
             id="btn-add-team"
             onClick={handleAddToTeam}
             disabled={inTeam}
-            className={`w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors ${
+            className={`w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               inTeam
-                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                ? 'bg-gray-100 dark:bg-zinc-900 text-gray-400 dark:text-zinc-600 cursor-not-allowed'
                 : 'bg-primary text-white active:scale-95 shadow-lg shadow-primary/20'
             }`}
           >

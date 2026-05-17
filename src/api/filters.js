@@ -19,3 +19,21 @@ export async function fetchPokemonIdsByAbility(ability) {
     }))
     .filter((p) => p.id >= 1 && p.id <= 1010);
 }
+export async function fetchPokemonIdsByGrowthRate(growthRate) {
+  const res = await fetch(`https://pokeapi.co/api/v2/growth-rate/${growthRate}`);
+  if (!res.ok) throw new Error(`Gagal mengambil growth rate: ${growthRate}`);
+  const data = await res.json();
+  return data.pokemon_species
+    .map((p) => parseInt(p.url.split('/').filter(Boolean).pop()))
+    .filter((id) => id >= 1 && id <= 1010)
+    .sort((a, b) => a - b);
+}
+export async function fetchPokemonIdsByEggGroup(eggGroup) {
+  const res = await fetch(`https://pokeapi.co/api/v2/egg-group/${eggGroup}`);
+  if (!res.ok) throw new Error(`Gagal mengambil egg group: ${eggGroup}`);
+  const data = await res.json();
+  return data.pokemon_species
+    .map((p) => parseInt(p.url.split('/').filter(Boolean).pop()))
+    .filter((id) => id >= 1 && id <= 1010)
+    .sort((a, b) => a - b);
+}

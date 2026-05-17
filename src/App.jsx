@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import BottomNav from './components/BottomNav';
@@ -6,11 +7,21 @@ import PokedexPage from './pages/PokedexPage';
 import DetailPage from './pages/DetailPage';
 import TeamBuilderPage from './pages/TeamBuilderPage';
 import AIChatPage from './pages/AIChatPage';
+import useSettingsStore from './store/settingsStore';
 
 export default function App() {
+  const { isDark } = useSettingsStore();
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }, [isDark]);
+
   return (
     <div className="flex min-h-svh bg-neutral-bg">
-      {/* Sidebar — hanya tampil di desktop */}
       <Sidebar />
 
       {/* Area konten utama */}

@@ -8,12 +8,12 @@ export default function TypeWeaknesses({ types }) {
 
   return (
     <div className="mt-8">
-      <p className="text-sm font-semibold text-gray-700 mb-3">Kelemahan Tipe</p>
+      <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Kelemahan Tipe</p>
       <div className="flex flex-wrap gap-2">
         {weaknesses.map((w) => (
           <div key={w.type} className="relative">
             <TypeBadge type={w.type} />
-            <span className={`absolute -top-1.5 -right-1.5 text-[9px] font-black px-1 rounded-md border-2 border-white shadow-sm ${
+            <span className={`absolute -top-1.5 -right-1.5 text-[9px] font-black px-1 rounded-md border-2 border-white dark:border-zinc-950 shadow-sm ${
               w.multiplier >= 4 ? 'bg-red-500 text-white' : 
               w.multiplier >= 2 ? 'bg-orange-400 text-white' : 
               'bg-gray-400 text-white'
@@ -23,7 +23,7 @@ export default function TypeWeaknesses({ types }) {
           </div>
         ))}
       </div>
-      <p className="text-[10px] text-gray-400 mt-2 italic">
+      <p className="text-[10px] text-gray-400 dark:text-zinc-555 mt-2 italic">
         * Multiplier damage yang diterima dari tipe serangan tertentu.
       </p>
     </div>

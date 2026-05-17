@@ -10,9 +10,9 @@ export default function StatBar({ name, value }) {
 
   return (
     <div className="flex items-center gap-2 text-sm">
-      <span className="w-14 text-right text-gray-500 font-medium shrink-0">{label}</span>
-      <span className="w-8 text-center font-semibold text-gray-800">{value}</span>
-      <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
+      <span className="w-14 text-right text-gray-500 dark:text-zinc-500 font-medium shrink-0">{label}</span>
+      <span className="w-8 text-center font-semibold text-gray-800 dark:text-zinc-300">{value}</span>
+      <div className="flex-1 h-2 bg-gray-200 dark:bg-zinc-800 rounded-full overflow-hidden">
         <div
           className="h-full rounded-full transition-all duration-500"
           style={{ width: `${pct}%`, backgroundColor: color }}

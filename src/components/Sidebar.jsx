@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { FaList, FaUsers, FaRobot } from 'react-icons/fa6';
+import { FaList, FaUsers, FaRobot, FaSun, FaMoon } from 'react-icons/fa6';
+import useSettingsStore from '../store/settingsStore';
 
 const TABS = [
   { path: '/',     label: 'Pokedex', Icon: FaList },
@@ -8,16 +9,18 @@ const TABS = [
 ];
 
 export default function Sidebar() {
+  const { isDark, toggleDarkMode } = useSettingsStore();
+
   return (
-    <aside className="hidden md:flex flex-col w-56 fixed left-0 top-0 h-screen bg-white border-r border-gray-100 z-40">
+    <aside className="hidden md:flex flex-col w-56 fixed left-0 top-0 h-screen bg-white dark:bg-zinc-950 border-r border-gray-100 dark:border-zinc-900 z-40">
       {/* Logo */}
       <div className="px-5 py-7 flex items-center gap-3">
         <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-sm shrink-0">
           <FaList size={15} className="text-white" />
         </div>
         <div>
-          <p className="text-base font-bold text-gray-900 leading-tight">Pokedex</p>
-          <p className="text-xs text-gray-400 leading-tight">AI Edition</p>
+          <p className="text-base font-bold text-gray-900 dark:text-zinc-100 leading-tight">Pokedex</p>
+          <p className="text-xs text-gray-400 dark:text-zinc-500 leading-tight">AI Edition</p>
         </div>
       </div>
 
@@ -33,7 +36,7 @@ export default function Sidebar() {
               `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors ${
                 isActive
                   ? 'bg-primary/10 text-primary'
-                  : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
+                  : 'text-gray-500 dark:text-zinc-400 hover:bg-gray-50 dark:hover:bg-zinc-900/50 hover:text-gray-700 dark:hover:text-zinc-200'
               }`
             }
           >
@@ -43,8 +46,15 @@ export default function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-5 py-5">
-        <p className="text-xs text-gray-300">PokeAPI + Groq AI</p>
+      <div className="px-5 py-5 flex flex-col gap-3">
+        <button
+          onClick={toggleDarkMode}
+          className="flex items-center justify-between w-full p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900/50 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all text-xs font-semibold cursor-pointer"
+        >
+          <span>Dark Mode</span>
+          {isDark ? <FaSun size={14} className="text-amber-500" /> : <FaMoon size={14} className="text-indigo-500" />}
+        </button>
+        <p className="text-xs text-gray-300 dark:text-zinc-700">PokeAPI + Groq AI</p>
       </div>
     </aside>
   );

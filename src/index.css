@@ -1,10 +1,24 @@
 @import "tailwindcss";
 
+@variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-accent1-val: #BBD5DA;
+  --color-accent2-val: #DFF1F1;
+  --color-neutral-bg-val: #F5F5F5;
+}
+
+.dark {
+  --color-accent1-val: #27272a;
+  --color-accent2-val: #18181b;
+  --color-neutral-bg-val: #09090b;
+}
+
 @theme {
   --color-primary: #FF0000;
-  --color-accent1: #BBD5DA;
-  --color-accent2: #DFF1F1;
-  --color-neutral-bg: #F5F5F5;
+  --color-accent1: var(--color-accent1-val);
+  --color-accent2: var(--color-accent2-val);
+  --color-neutral-bg: var(--color-neutral-bg-val);
 }
 
 body {

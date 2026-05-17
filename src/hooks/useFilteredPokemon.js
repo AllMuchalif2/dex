@@ -1,19 +1,27 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { fetchPokemonIdsByType, fetchPokemonIdsByAbility } from '../api/filters';
+import { fetchPokemonIdsByType, fetchPokemonIdsByAbility, fetchPokemonIdsByGrowthRate, fetchPokemonIdsByEggGroup } from '../api/filters';
 import useFilterStore, { computeFilteredIds } from '../store/filterStore';
 
 const PAGE_SIZE = 20;
 const STALE = 24 * 60 * 60 * 1000;
 
 export function useFilteredPokemon() {
-  const { selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot } = useFilterStore();
+  const {
+    selectedVersion,
+    selectedGen,
+    selectedType,
+    selectedAbility,
+    selectedAbilitySlot,
+    selectedGrowthRate,
+    selectedEggGroup,
+    selectedEvYield
+  } = useFilterStore();
   const [page, setPage] = useState(0);
 
-  // Reset halaman setiap kali filter berubah
   useEffect(() => {
     setPage(0);
-  }, [selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot]);
+  }, [selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, selectedGrowthRate, selectedEggGroup, selectedEvYield]);
 
   // Fetch IDs berdasarkan tipe dari API (di-cache 24h)
   const typeQueries = useQueries({
@@ -29,19 +37,65 @@ export function useFilteredPokemon() {
       : [],
   });
 
+  const growthRateQueries = useQueries({
+    queries: selectedGrowthRate
+      ? [{ queryKey: ['growth-rate-filter', selectedGrowthRate], queryFn: () => fetchPokemonIdsByGrowthRate(selectedGrowthRate), staleTime: STALE }]
+      : [],
+  });
+
+  const eggGroupQueries = useQueries({
+    queries: selectedEggGroup
+      ? [{ queryKey: ['egg-group-filter', selectedEggGroup], queryFn: () => fetchPokemonIdsByEggGroup(selectedEggGroup), staleTime: STALE }]
+      : [],
+  });
+
   const typesLoading = selectedType != null && typeQueries.some((q) => q.isLoading);
   const abilityLoading = selectedAbility != null && abilityQueries.some((q) => q.isLoading);
+  const growthRateLoading = selectedGrowthRate != null && growthRateQueries.some((q) => q.isLoading);
+  const eggGroupLoading = selectedEggGroup != null && eggGroupQueries.some((q) => q.isLoading);
   
   const typeIds = typeQueries[0]?.data ? new Set(typeQueries[0].data) : null;
   const abilityData = abilityQueries[0]?.data ?? null;
+  const growthRateIds = growthRateQueries[0]?.data ?? null;
+  const eggGroupIds = eggGroupQueries[0]?.data ?? null;
 
   // Hitung filtered IDs (AND logic)
   const filteredIds = useMemo(() => {
-    if (typesLoading || abilityLoading) return null;
-    return computeFilteredIds(selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, typeIds, abilityData);
-  }, [selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, typeIds, abilityData, typesLoading, abilityLoading]);
+    if (typesLoading || abilityLoading || growthRateLoading || eggGroupLoading) return null;
+    return computeFilteredIds(
+      selectedVersion,
+      selectedGen,
+      selectedType,
+      selectedAbility,
+      selectedAbilitySlot,
+      selectedGrowthRate,
+      selectedEggGroup,
+      typeIds,
+      abilityData,
+      growthRateIds,
+      eggGroupIds,
+      selectedEvYield
+    );
+  }, [
+    selectedVersion,
+    selectedGen,
+    selectedType,
+    selectedAbility,
+    selectedAbilitySlot,
+    selectedGrowthRate,
+    selectedEggGroup,
+    selectedEvYield,
+    typeIds,
+    abilityData,
+    growthRateIds,
+    eggGroupIds,
+    typesLoading,
+    abilityLoading,
+    growthRateLoading,
+    eggGroupLoading,
+  ]);
 
-  const isFiltered = !!(selectedVersion || selectedGen || selectedType || selectedAbility);
+  const isFiltered = !!(selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield);
   const pageIds = filteredIds ? filteredIds.slice(0, (page + 1) * PAGE_SIZE) : [];
   const hasMore = filteredIds ? (page + 1) * PAGE_SIZE < filteredIds.length : false;
 
@@ -52,7 +106,7 @@ export function useFilteredPokemon() {
     page,
     setPage,
     hasMore,
-    isLoading: typesLoading,
+    isLoading: typesLoading || abilityLoading || growthRateLoading || eggGroupLoading,
     isFiltered,
   };
 }
