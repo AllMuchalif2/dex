@@ -49,10 +49,14 @@ export default function FilterBar() {
     setSelectedGrowthRate,
     setSelectedEggGroup,
     setSelectedEvYield,
+    selectedMove,
+    selectedMoveSlot,
+    setSelectedMove,
+    setSelectedMoveSlot,
     clearAll,
   } = useFilterStore();
 
-  const hasAny = selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield;
+  const hasAny = selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield || selectedMove;
 
   return (
     <div className="flex flex-col gap-2 w-full">
@@ -116,6 +120,43 @@ export default function FilterBar() {
                 onClick={() => setSelectedAbilitySlot(slot.id)}
                 className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer ${
                   selectedAbilitySlot === slot.id 
+                    ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105' 
+                    : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-400'
+                }`}
+              >
+                {slot.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {selectedMove && (
+        <div className="flex items-center justify-between bg-accent2/40 dark:bg-zinc-900/60 px-3 py-2 rounded-2xl border border-primary/5 dark:border-zinc-800 animate-in fade-in slide-in-from-top-1">
+          <div className="flex items-center gap-2 overflow-hidden">
+            <span className="text-[9px] font-black text-primary/60 dark:text-primary/70 uppercase tracking-tighter shrink-0">Move</span>
+            <span className="text-xs font-bold text-gray-700 dark:text-zinc-200 truncate">{formatName(selectedMove)}</span>
+            <button
+              onClick={() => setSelectedMove(null)}
+              className="text-gray-400 dark:text-zinc-550 hover:text-red-400 dark:hover:text-red-450 p-1 rounded-lg transition-colors cursor-pointer shrink-0"
+            >
+              <FaXmark size={10} />
+            </button>
+          </div>
+          
+          <div className="flex bg-white/60 dark:bg-zinc-800/60 p-0.5 rounded-lg border border-primary/10 dark:border-zinc-700 shadow-sm overflow-x-auto scrollbar-none">
+            {[
+              { id: 'all', label: 'All' },
+              { id: 'level-up', label: 'Level' },
+              { id: 'machine', label: 'TM/HM' },
+              { id: 'egg', label: 'Egg' },
+              { id: 'tutor', label: 'Tutor' }
+            ].map((slot) => (
+              <button
+                key={slot.id}
+                onClick={() => setSelectedMoveSlot(slot.id)}
+                className={`px-3 py-1 text-[10px] font-bold rounded-md transition-all cursor-pointer whitespace-nowrap ${
+                  selectedMoveSlot === slot.id 
                     ? 'bg-primary text-white shadow-md shadow-primary/20 scale-105' 
                     : 'text-gray-400 dark:text-zinc-500 hover:text-gray-600 dark:hover:text-zinc-400'
                 }`}

@@ -29,10 +29,10 @@ export default function PokedexPage() {
   const isSearching = query.trim().length > 0;
   const allIds = (data?.pages.flatMap((p) => p.results) ?? []).map((p) => getIdFromUrl(p.url));
   const idsToFetch = isSearching ? searchIds : isFiltered ? filteredPageIds : allIds;
-  const details = usePokemonDetailBatch(idsToFetch);
-  const cards = details.filter((d) => d.data).map((d) => ({
-    id: d.data.id, name: d.data.name, types: d.data.types.map((t) => t.type.name),
-  }));
+  const { data: details, isLoading: batchLoading } = usePokemonDetailBatch(idsToFetch);
+  const cards = details ? details.map((d) => ({
+    id: d.id, name: d.name, types: d.types.map((t) => t.type.name),
+  })).sort((a, b) => idsToFetch.indexOf(a.id) - idsToFetch.indexOf(b.id)) : [];
 
   useEffect(() => {
     const el = loadMoreRef.current;
@@ -50,7 +50,7 @@ export default function PokedexPage() {
     return () => obs.disconnect();
   }, [isFiltered, isSearching, hasNextPage, isFetchingNextPage, fetchNextPage, hasMore, setPage]);
 
-  const isLoadingAny = isFiltered ? filterLoading : listLoading;
+  const isLoadingAny = (isFiltered ? filterLoading : listLoading) || batchLoading;
 
   return (
     <div className="flex flex-col h-full">

@@ -15,16 +15,21 @@ import useFilterStore from '../store/filterStore';
 import { VERSION_TO_GEN } from '../utils/filterData';
 import EvolutionChain from '../components/EvolutionChain';
 import TypeWeaknesses from '../components/TypeWeaknesses';
+import PokemonMoves from '../components/PokemonMoves';
+import AbilityModal from '../components/AbilityModal';
+import MoveModal from '../components/MoveModal';
 
 
 export default function DetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeAbilityTab, setActiveAbilityTab] = useState('normal');
+  const [selectedModalAbility, setSelectedModalAbility] = useState(null);
+  const [selectedModalMove, setSelectedModalMove] = useState(null);
   const { data: pokemon, isLoading, isError } = usePokemonDetail(id);
   const { data: species } = usePokemonSpecies(pokemon?.species?.name);
   const { team, addToTeam } = useTeamStore();
-  const { selectedVersion, setSelectedAbility, setSelectedGrowthRate, setSelectedEggGroup, setSelectedEvYield } = useFilterStore();
+  const { selectedVersion, setSelectedAbility, setSelectedGrowthRate, setSelectedEggGroup, setSelectedEvYield, setSelectedMove } = useFilterStore();
   const { description, versionName } = usePokemonDescription(pokemon?.species?.name || id, selectedVersion);
 
   if (isLoading) return <div className="flex items-center justify-center h-full"><LoadingSpinner /></div>;
@@ -64,9 +69,25 @@ export default function DetailPage() {
   const femalePercent = (genderRate / 8) * 100;
   const malePercent = 100 - femalePercent;
   function handleAbilityClick(abilityName) {
+    setSelectedModalAbility(abilityName);
+  }
+
+  function handleFilterByAbility(abilityName) {
     setSelectedAbility(abilityName);
+    setSelectedModalAbility(null);
     navigate('/');
     toast.success(`Filter: Ability ${formatName(abilityName)}`);
+  }
+
+  function handleMoveClick(moveName) {
+    setSelectedModalMove(moveName);
+  }
+
+  function handleFilterByMove(moveName) {
+    setSelectedMove(moveName);
+    setSelectedModalMove(null);
+    navigate('/');
+    toast.success(`Filter: Move ${formatName(moveName)}`);
   }
 
   function handleGrowthRateClick(growthRate) {
@@ -97,8 +118,29 @@ export default function DetailPage() {
       animate={{ opacity: 1, y: 0 }}
       className="flex flex-col md:flex-row min-h-svh"
     >
+      {/* Sticky Header Mobile */}
+      <div 
+        className="md:hidden sticky top-0 z-50 flex items-center gap-3 px-4 py-3 shadow-sm"
+        style={{ backgroundColor: light }}
+      >
+        <button
+          onClick={() => {
+            if (window.history.state && window.history.state.idx > 0) {
+              navigate(-1);
+            } else {
+              navigate('/');
+            }
+          }}
+          className="p-2 rounded-full bg-white/40 dark:bg-zinc-900/40 backdrop-blur-sm text-gray-800 dark:text-zinc-200 cursor-pointer"
+        >
+          <FaArrowLeft size={16} />
+        </button>
+        <span className="font-bold text-gray-900 capitalize drop-shadow-sm">{formatName(pokemon.name)}</span>
+      </div>
+
       {/* Panel kiri: header + gambar (sticky di desktop) */}
-      <div className="relative px-4 pt-12 pb-6 md:w-80 md:min-h-svh md:sticky md:top-0 md:flex md:flex-col md:justify-center md:shrink-0 dark:brightness-95 dark:opacity-90" style={{ backgroundColor: light }}>
+      <div className="relative px-4 pt-4 pb-6 md:pt-12 md:w-80 md:min-h-svh md:sticky md:top-0 md:flex md:flex-col md:justify-center md:shrink-0 dark:brightness-95 dark:opacity-90" style={{ backgroundColor: light }}>
+        {/* Tombol Back Desktop */}
         <button
           id="btn-back"
           onClick={() => {
@@ -108,7 +150,7 @@ export default function DetailPage() {
               navigate('/');
             }
           }}
-          className="absolute top-12 left-4 p-2 rounded-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm text-gray-700 dark:text-zinc-300 cursor-pointer z-30"
+          className="hidden md:flex absolute top-12 left-4 p-2 rounded-full bg-white/60 dark:bg-zinc-900/60 backdrop-blur-sm text-gray-700 dark:text-zinc-300 cursor-pointer z-30"
         >
           <FaArrowLeft size={16} />
         </button>
@@ -293,7 +335,12 @@ export default function DetailPage() {
 
         {/* Stats */}
         <div className="mb-8">
-          <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300 mb-3">Statistik Dasar</p>
+          <div className="flex justify-between items-end mb-3">
+            <p className="text-sm font-semibold text-gray-700 dark:text-zinc-300">Statistik Dasar</p>
+            <p className="text-xs font-bold text-gray-400 dark:text-zinc-500">
+              Total: <span className="text-gray-800 dark:text-zinc-200 text-sm ml-1">{pokemon.stats.reduce((acc, curr) => acc + curr.base_stat, 0)}</span>
+            </p>
+          </div>
           <div className="flex flex-col gap-2.5">
             {pokemon.stats.map((s) => (
               <StatBar key={s.stat.name} name={s.stat.name} value={s.base_stat} />
@@ -328,6 +375,11 @@ export default function DetailPage() {
         {/* Evolution Chain */}
         {species?.evolution_chain && <EvolutionChain url={species.evolution_chain.url} />}
 
+        {/* Moves List */}
+        {pokemon.moves && (
+          <PokemonMoves moves={pokemon.moves} version={versionName || selectedVersion} onMoveClick={handleMoveClick} />
+        )}
+
         <div className="mt-10">
           <button
             id="btn-add-team"
@@ -343,6 +395,23 @@ export default function DetailPage() {
           </button>
         </div>
       </div>
+
+      {/* Ability Modal */}
+      {/* Ability Modal */}
+      <AbilityModal
+        isOpen={!!selectedModalAbility}
+        onClose={() => setSelectedModalAbility(null)}
+        abilityName={selectedModalAbility}
+        onFilter={handleFilterByAbility}
+      />
+
+      {/* Move Modal */}
+      <MoveModal
+        isOpen={!!selectedModalMove}
+        onClose={() => setSelectedModalMove(null)}
+        moveName={selectedModalMove}
+        onFilter={handleFilterByMove}
+      />
     </motion.div>
   );
 }

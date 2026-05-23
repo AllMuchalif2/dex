@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useQueries } from '@tanstack/react-query';
-import { fetchPokemonIdsByType, fetchPokemonIdsByAbility, fetchPokemonIdsByGrowthRate, fetchPokemonIdsByEggGroup } from '../api/filters';
+import { fetchPokemonIdsByType, fetchPokemonIdsByAbility, fetchPokemonIdsByGrowthRate, fetchPokemonIdsByEggGroup, fetchPokemonIdsByMove } from '../api/filters';
 import useFilterStore, { computeFilteredIds } from '../store/filterStore';
 
 const PAGE_SIZE = 20;
@@ -15,13 +15,15 @@ export function useFilteredPokemon() {
     selectedAbilitySlot,
     selectedGrowthRate,
     selectedEggGroup,
-    selectedEvYield
+    selectedEvYield,
+    selectedMove,
+    selectedMoveSlot
   } = useFilterStore();
   const [page, setPage] = useState(0);
 
   useEffect(() => {
     setPage(0);
-  }, [selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, selectedGrowthRate, selectedEggGroup, selectedEvYield]);
+  }, [selectedVersion, selectedGen, selectedType, selectedAbility, selectedAbilitySlot, selectedGrowthRate, selectedEggGroup, selectedEvYield, selectedMove, selectedMoveSlot]);
 
   // Fetch IDs berdasarkan tipe dari API (di-cache 24h)
   const typeQueries = useQueries({
@@ -49,19 +51,27 @@ export function useFilteredPokemon() {
       : [],
   });
 
+  const moveQueries = useQueries({
+    queries: selectedMove
+      ? [{ queryKey: ['move-filter', selectedMove], queryFn: () => fetchPokemonIdsByMove(selectedMove), staleTime: STALE }]
+      : [],
+  });
+
   const typesLoading = selectedType != null && typeQueries.some((q) => q.isLoading);
   const abilityLoading = selectedAbility != null && abilityQueries.some((q) => q.isLoading);
   const growthRateLoading = selectedGrowthRate != null && growthRateQueries.some((q) => q.isLoading);
   const eggGroupLoading = selectedEggGroup != null && eggGroupQueries.some((q) => q.isLoading);
+  const moveLoading = selectedMove != null && moveQueries.some((q) => q.isLoading);
   
   const typeIds = typeQueries[0]?.data ? new Set(typeQueries[0].data) : null;
   const abilityData = abilityQueries[0]?.data ?? null;
   const growthRateIds = growthRateQueries[0]?.data ?? null;
   const eggGroupIds = eggGroupQueries[0]?.data ?? null;
+  const moveIds = moveQueries[0]?.data ?? null;
 
   // Hitung filtered IDs (AND logic)
   const filteredIds = useMemo(() => {
-    if (typesLoading || abilityLoading || growthRateLoading || eggGroupLoading) return null;
+    if (typesLoading || abilityLoading || growthRateLoading || eggGroupLoading || moveLoading) return null;
     return computeFilteredIds(
       selectedVersion,
       selectedGen,
@@ -74,7 +84,10 @@ export function useFilteredPokemon() {
       abilityData,
       growthRateIds,
       eggGroupIds,
-      selectedEvYield
+      selectedEvYield,
+      selectedMove,
+      selectedMoveSlot,
+      moveIds
     );
   }, [
     selectedVersion,
@@ -85,17 +98,21 @@ export function useFilteredPokemon() {
     selectedGrowthRate,
     selectedEggGroup,
     selectedEvYield,
+    selectedMove,
+    selectedMoveSlot,
     typeIds,
     abilityData,
     growthRateIds,
     eggGroupIds,
+    moveIds,
     typesLoading,
     abilityLoading,
     growthRateLoading,
     eggGroupLoading,
+    moveLoading,
   ]);
 
-  const isFiltered = !!(selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield);
+  const isFiltered = !!(selectedVersion || selectedGen || selectedType || selectedAbility || selectedGrowthRate || selectedEggGroup || selectedEvYield || selectedMove);
   const pageIds = filteredIds ? filteredIds.slice(0, (page + 1) * PAGE_SIZE) : [];
   const hasMore = filteredIds ? (page + 1) * PAGE_SIZE < filteredIds.length : false;
 
@@ -106,7 +123,7 @@ export function useFilteredPokemon() {
     page,
     setPage,
     hasMore,
-    isLoading: typesLoading || abilityLoading || growthRateLoading || eggGroupLoading,
+    isLoading: typesLoading || abilityLoading || growthRateLoading || eggGroupLoading || moveLoading,
     isFiltered,
   };
 }

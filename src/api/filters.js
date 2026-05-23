@@ -37,3 +37,33 @@ export async function fetchPokemonIdsByEggGroup(eggGroup) {
     .filter((id) => id >= 1 && id <= 1010)
     .sort((a, b) => a - b);
 }
+
+export async function fetchPokemonIdsByMove(move) {
+  const query = `
+    query getPokemonIdsByMove {
+      pokemon_v2_pokemon(where: {pokemon_v2_pokemonmoves: {pokemon_v2_move: {name: {_eq: "${move}"}}}}) {
+        id
+        pokemon_v2_pokemonmoves(where: {pokemon_v2_move: {name: {_eq: "${move}"}}}) {
+          pokemon_v2_movelearnmethod {
+            name
+          }
+        }
+      }
+    }
+  `;
+  const res = await fetch('https://beta.pokeapi.co/graphql/v1beta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  if (!res.ok) throw new Error(`Gagal mengambil move: ${move}`);
+  const json = await res.json();
+  
+  return json.data.pokemon_v2_pokemon
+    .map((p) => ({
+      id: p.id,
+      methods: [...new Set(p.pokemon_v2_pokemonmoves.map((m) => m.pokemon_v2_movelearnmethod.name))]
+    }))
+    .filter((p) => p.id >= 1 && p.id <= 1010)
+    .sort((a, b) => a.id - b.id);
+}

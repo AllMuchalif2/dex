@@ -1,5 +1,5 @@
 import { useQuery, useQueries } from '@tanstack/react-query';
-import { fetchPokemonDetail, fetchPokemonSpecies, fetchAllPokemonNames, fetchEvolutionChain } from '../api/pokeapi';
+import { fetchPokemonDetail, fetchPokemonSpecies, fetchAllPokemonNames, fetchEvolutionChain, fetchPokemonAbility, fetchPokemonBatchGraphQL, fetchPokemonMove } from '../api/pokeapi';
 
 const STALE = 24 * 60 * 60 * 1000;
 
@@ -42,13 +42,32 @@ export function useEvolutionChain(url) {
   });
 }
 
-// Hook batch detail untuk array id
+// Hook batch detail menggunakan GraphQL untuk menghindari N+1 query problem
 export function usePokemonDetailBatch(ids = []) {
-  return useQueries({
-    queries: ids.map((id) => ({
-      queryKey: ['pokemon', id],
-      queryFn: () => fetchPokemonDetail(id),
-      staleTime: STALE,
-    })),
+  return useQuery({
+    queryKey: ['pokemon-batch', ids],
+    queryFn: () => fetchPokemonBatchGraphQL(ids),
+    staleTime: STALE,
+    enabled: ids.length > 0,
+  });
+}
+
+// Hook ability detail
+export function usePokemonAbility(name) {
+  return useQuery({
+    queryKey: ['pokemon-ability', name],
+    queryFn: () => fetchPokemonAbility(name),
+    staleTime: STALE,
+    enabled: !!name,
+  });
+}
+
+// Hook move detail
+export function usePokemonMove(name) {
+  return useQuery({
+    queryKey: ['pokemon-move', name],
+    queryFn: () => fetchPokemonMove(name),
+    staleTime: STALE,
+    enabled: !!name,
   });
 }

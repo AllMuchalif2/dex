@@ -18,7 +18,10 @@ export function computeFilteredIds(
   abilityData,
   growthRateIds,
   eggGroupIds,
-  selectedEvYield
+  selectedEvYield,
+  selectedMove,
+  selectedMoveSlot,
+  moveData
 ) {
   let result = null;
 
@@ -91,7 +94,20 @@ export function computeFilteredIds(
       : evSet;
   }
 
-  const hasFilter = !!selectedVersion || !!selectedGen || !!selectedType || !!selectedAbility || !!selectedGrowthRate || !!selectedEggGroup || !!selectedEvYield;
+  // Step 8: Filter Move + Slot
+  if (selectedMove && moveData) {
+    let filteredMoveIds = moveData;
+    if (selectedMoveSlot !== 'all') {
+      filteredMoveIds = moveData.filter((p) => p.methods && p.methods.includes(selectedMoveSlot));
+    }
+    
+    const mSet = new Set(filteredMoveIds.map((p) => p.id));
+    result = result
+      ? new Set([...result].filter((id) => mSet.has(id)))
+      : mSet;
+  }
+
+  const hasFilter = !!selectedVersion || !!selectedGen || !!selectedType || !!selectedAbility || !!selectedGrowthRate || !!selectedEggGroup || !!selectedEvYield || !!selectedMove;
   if (!hasFilter) return null;
 
   return result ? [...result].sort((a, b) => a - b) : [];
@@ -109,6 +125,8 @@ const useFilterStore = create(
       selectedGrowthRate: null,
       selectedEggGroup: null,
       selectedEvYield: null,
+      selectedMove: null,
+      selectedMoveSlot: 'all',
 
       setSelectedVersion: (v) => set({ selectedVersion: v }),
       setSelectedGen: (g) => set({ selectedGen: g }),
@@ -118,6 +136,8 @@ const useFilterStore = create(
       setSelectedGrowthRate: (g) => set({ selectedGrowthRate: g }),
       setSelectedEggGroup: (e) => set({ selectedEggGroup: e }),
       setSelectedEvYield: (y) => set({ selectedEvYield: y }),
+      setSelectedMove: (m) => set({ selectedMove: m, selectedMoveSlot: 'all' }),
+      setSelectedMoveSlot: (s) => set({ selectedMoveSlot: s }),
 
       clearAll: () => set({ 
         selectedVersion: null, 
@@ -128,6 +148,8 @@ const useFilterStore = create(
         selectedGrowthRate: null,
         selectedEggGroup: null,
         selectedEvYield: null,
+        selectedMove: null,
+        selectedMoveSlot: 'all',
       }),
     }),
     { name: 'pokedex-filter-store' }
