@@ -8,6 +8,7 @@ import { EV_YIELD_MAP } from '../utils/evYieldData';
 // typeIds: Set<number>, abilityData: Array<{id: number, isHidden: boolean}>
 export function computeFilteredIds(
   selectedVersion,
+  versionIds,
   selectedGen,
   selectedType,
   selectedAbility,
@@ -32,15 +33,11 @@ export function computeFilteredIds(
   }
 
   // Step 2: Filter Versi
-  if (selectedVersion) {
-    const impliedGen = VERSION_TO_GEN[selectedVersion];
-    if (impliedGen && GEN_RANGES[impliedGen]) {
-      const [min, max] = GEN_RANGES[impliedGen];
-      const versionSet = new Set(Array.from({ length: max - min + 1 }, (_, i) => min + i));
-      result = result
-        ? new Set([...result].filter((id) => versionSet.has(id)))
-        : versionSet;
-    }
+  if (selectedVersion && versionIds) {
+    const versionSet = versionIds instanceof Set ? versionIds : new Set(versionIds);
+    result = result
+      ? new Set([...result].filter((id) => versionSet.has(id)))
+      : versionSet;
   }
 
   // Step 3: Filter Tipe

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { FaMagnifyingGlass, FaXmark, FaSliders, FaSun, FaMoon } from 'react-icons/fa6';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { FaMagnifyingGlass, FaXmark, FaSliders, FaSun, FaMoon, FaArrowLeft } from 'react-icons/fa6';
 import { usePokemonList } from '../hooks/usePokemonList';
 import { usePokemonDetailBatch, useAllPokemonNames } from '../hooks/usePokemonDetail';
 import { useFilteredPokemon } from '../hooks/useFilteredPokemon';
@@ -14,6 +15,10 @@ const GRID = 'grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-
 export default function PokedexPage() {
   const [query, setQuery] = useState('');
   const loadMoreRef = useRef(null);
+  
+  const location = useLocation();
+  const navigate = useNavigate();
+  const pickingForTeam = location.state?.pickingForTeam;
 
   const { isDark, toggleDarkMode } = useSettingsStore();
   const { data: allNames } = useAllPokemonNames();
@@ -54,7 +59,18 @@ export default function PokedexPage() {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="bg-white dark:bg-zinc-950 px-4 pt-10 pb-3 md:pt-6 border-b border-gray-100 dark:border-zinc-900 sticky top-0 z-10 flex flex-col gap-2">
+      {pickingForTeam && (
+        <div className="bg-primary text-white px-4 py-2 flex items-center justify-between text-xs font-semibold shadow-md z-20">
+          <span>Memilih Pokemon untuk {pickingForTeam.name}</span>
+          <button 
+            onClick={() => navigate('/', { replace: true, state: {} })}
+            className="flex items-center gap-1.5 hover:bg-white/20 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+          >
+            <FaXmark size={12} /> Batal
+          </button>
+        </div>
+      )}
+      <div className="bg-white dark:bg-zinc-950 px-4 pt-4 pb-3 md:pt-6 border-b border-gray-100 dark:border-zinc-900 sticky top-0 z-10 flex flex-col gap-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Pokedex</h1>

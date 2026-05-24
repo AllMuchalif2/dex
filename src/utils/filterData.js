@@ -13,18 +13,20 @@ export const GEN_RANGES = {
 
 // Mapping versi game → nama generasi PokeAPI
 export const VERSION_TO_GEN = {
-  red: 'generation-i', blue: 'generation-i', yellow: 'generation-i',
-  gold: 'generation-ii', silver: 'generation-ii', crystal: 'generation-ii',
-  ruby: 'generation-iii', sapphire: 'generation-iii', emerald: 'generation-iii',
-  firered: 'generation-i', leafgreen: 'generation-i',
-  diamond: 'generation-iv', pearl: 'generation-iv', platinum: 'generation-iv',
-  heartgold: 'generation-ii', soulsilver: 'generation-ii',
-  black: 'generation-v', white: 'generation-v', 'black-2': 'generation-v', 'white-2': 'generation-v',
-  x: 'generation-vi', y: 'generation-vi',
-  'omega-ruby': 'generation-iii', 'alpha-sapphire': 'generation-iii',
-  sun: 'generation-vii', moon: 'generation-vii', 'ultra-sun': 'generation-vii', 'ultra-moon': 'generation-vii',
-  sword: 'generation-viii', shield: 'generation-viii',
-  scarlet: 'generation-ix', violet: 'generation-ix',
+  red: 'generation-i', blue: 'generation-i', yellow: 'generation-i', 'red-blue': 'generation-i',
+  gold: 'generation-ii', silver: 'generation-ii', crystal: 'generation-ii', 'gold-silver': 'generation-ii',
+  ruby: 'generation-iii', sapphire: 'generation-iii', emerald: 'generation-iii', 'ruby-sapphire': 'generation-iii',
+  firered: 'generation-i', leafgreen: 'generation-i', 'firered-leafgreen': 'generation-i',
+  diamond: 'generation-iv', pearl: 'generation-iv', platinum: 'generation-iv', 'diamond-pearl': 'generation-iv',
+  heartgold: 'generation-ii', soulsilver: 'generation-ii', 'heartgold-soulsilver': 'generation-ii',
+  black: 'generation-v', white: 'generation-v', 'black-white': 'generation-v',
+  'black-2': 'generation-v', 'white-2': 'generation-v', 'black-2-white-2': 'generation-v',
+  x: 'generation-vi', y: 'generation-vi', 'x-y': 'generation-vi',
+  'omega-ruby': 'generation-iii', 'alpha-sapphire': 'generation-iii', 'omega-ruby-alpha-sapphire': 'generation-iii',
+  sun: 'generation-vii', moon: 'generation-vii', 'sun-moon': 'generation-vii',
+  'ultra-sun': 'generation-vii', 'ultra-moon': 'generation-vii', 'ultra-sun-ultra-moon': 'generation-vii',
+  sword: 'generation-viii', shield: 'generation-viii', 'sword-shield': 'generation-viii',
+  scarlet: 'generation-ix', violet: 'generation-ix', 'scarlet-violet': 'generation-ix',
 };
 
 export const GAME_VERSIONS = [

@@ -1,6 +1,5 @@
 import { usePokemonSpecies } from './usePokemonDetail';
 
-// Hook deskripsi Pokemon berdasarkan versi game yang dipilih
 export function usePokemonDescription(pokemonId, selectedGameVersion) {
   const { data: species, isLoading, isError } = usePokemonSpecies(pokemonId);
 
@@ -14,7 +13,8 @@ export function usePokemonDescription(pokemonId, selectedGameVersion) {
   let versionName = '';
 
   if (selectedGameVersion) {
-    const match = enEntries.find((e) => e.version.name === selectedGameVersion);
+    const allowedVersions = selectedGameVersion.split('-');
+    const match = enEntries.find((e) => allowedVersions.includes(e.version.name));
     if (match) {
       description = match.flavor_text;
       versionName = match.version.name;
@@ -28,7 +28,7 @@ export function usePokemonDescription(pokemonId, selectedGameVersion) {
   }
 
   return {
-    description: description.replace(/\f/g, ' ').trim(),
+    description: description.replace(/[\n\f]/g, ' ').trim(),
     versionName,
     isLoading,
     isError,

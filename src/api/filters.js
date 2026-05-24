@@ -67,3 +67,34 @@ export async function fetchPokemonIdsByMove(move) {
     .filter((p) => p.id >= 1 && p.id <= 1010)
     .sort((a, b) => a.id - b.id);
 }
+
+export async function fetchPokemonIdsByVersionGroup(versionGroup) {
+  const query = `
+    query getPokemonIdsByVersionGroup {
+      pokemon_v2_pokemon(where: {
+        pokemon_v2_pokemonmoves: {
+          pokemon_v2_versiongroup: {
+            _or: [
+              { name: { _eq: "${versionGroup}" } },
+              { pokemon_v2_versions: { name: { _eq: "${versionGroup}" } } }
+            ]
+          }
+        }
+      }) {
+        id
+      }
+    }
+  `;
+  const res = await fetch('https://beta.pokeapi.co/graphql/v1beta', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query })
+  });
+  if (!res.ok) throw new Error(`Gagal mengambil versi: ${versionGroup}`);
+  const json = await res.json();
+  
+  return json.data.pokemon_v2_pokemon
+    .map((p) => p.id)
+    .filter((id) => id >= 1 && id <= 1010)
+    .sort((a, b) => a - b);
+}

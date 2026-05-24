@@ -1,10 +1,10 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { FaList, FaUsers, FaRobot } from 'react-icons/fa6';
+import { FaList, FaUsers, FaCompass } from 'react-icons/fa6';
 
 const TABS = [
-  { path: '/',      label: 'Pokedex',  Icon: FaList },
-  { path: '/team',  label: 'Tim',      Icon: FaUsers },
-  { path: '/ai',    label: 'AI',       Icon: FaRobot },
+  { path: '/',           label: 'Pokedex',   Icon: FaList },
+  { path: '/team',       label: 'Tim',       Icon: FaUsers },
+  { path: '/menu-baru',  label: 'Menu', Icon: FaCompass },
 ];
 
 export default function BottomNav() {

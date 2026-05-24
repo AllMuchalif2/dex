@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { FaList, FaUsers, FaRobot, FaSun, FaMoon } from 'react-icons/fa6';
+import { FaList, FaUsers, FaCompass, FaSun, FaMoon } from 'react-icons/fa6';
 import useSettingsStore from '../store/settingsStore';
 
 const TABS = [
-  { path: '/',     label: 'Pokedex', Icon: FaList },
-  { path: '/team', label: 'Tim',     Icon: FaUsers },
-  { path: '/ai',   label: 'AI',      Icon: FaRobot },
+  { path: '/',           label: 'Pokedex',   Icon: FaList },
+  { path: '/team',       label: 'Tim',       Icon: FaUsers },
+  { path: '/menu-baru',  label: 'Menu Baru', Icon: FaCompass },
 ];
 
 export default function Sidebar() {

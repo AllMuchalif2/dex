@@ -8,6 +8,8 @@ import useTeamStore from '../store/teamStore';
 import useSettingsStore from '../store/settingsStore';
 import useChatStore from '../store/chatStore';
 import { formatName } from '../utils/formatters';
+import ClearChatModal from '../components/ClearChatModal';
+import ChatMessage from '../components/ChatMessage';
 
 export default function AIChatPage() {
   const { messages, addMessage, clearMessages } = useChatStore();
@@ -16,9 +18,12 @@ export default function AIChatPage() {
   const [showKeyInput, setShowKeyInput] = useState(false);
   const [tempKey, setTempKey] = useState('');
   const [copiedIndex, setCopiedIndex] = useState(null);
+  const [showClearModal, setShowClearModal] = useState(false);
   const bottomRef = useRef(null);
 
-  const { team } = useTeamStore();
+  const getActiveTeam = useTeamStore((s) => s.getActiveTeam);
+  const activeTeam = getActiveTeam();
+  const team = activeTeam.pokemonList;
   const { groqApiKey, setGroqApiKey, isDark, toggleDarkMode } = useSettingsStore();
 
   useEffect(() => {
@@ -64,83 +69,83 @@ export default function AIChatPage() {
   }
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="bg-white dark:bg-zinc-950 px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 dark:border-zinc-900 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">AI Advisor</h1>
-          <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
-            Tim: {team.length > 0 ? team.map((p) => formatName(p.name)).join(', ') : 'Kosong'}
+    <div className="flex flex-col h-full relative">
+      <div className="sticky top-0 z-50 flex flex-col">
+        {/* Header */}
+        <div className="bg-white dark:bg-zinc-950 px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 dark:border-zinc-900 flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">AI Advisor</h1>
+            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-0.5">
+            Tim ({activeTeam.name}): {team.length > 0 ? team.map((p) => formatName(p.name)).join(', ') : 'Kosong'}
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          {messages.length > 0 && (
-            <button
-              onClick={() => {
-                if (confirm('Hapus semua riwayat chat?')) clearMessages();
-              }}
-              className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-red-50 dark:bg-red-950/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all cursor-pointer flex items-center justify-center shadow-sm"
-              title="Hapus Chat"
-            >
-              <FaTrash size={14} />
-            </button>
-          )}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center shadow-sm"
-          >
-            {isDark ? <FaSun size={14} className="text-amber-500 animate-in spin-in-12 duration-300" /> : <FaMoon size={14} className="text-indigo-500 animate-in spin-in-12 duration-300" />}
-          </button>
-          <button
-            id="btn-api-key"
-            onClick={() => setShowKeyInput((v) => !v)}
-            className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
-              groqApiKey 
-                ? 'text-green-600 bg-green-50 dark:bg-green-950/30 border-green-100 dark:border-green-900' 
-                : 'text-gray-400 bg-gray-50 dark:bg-zinc-900 border-gray-100 dark:border-zinc-800'
-            }`}
-          >
-            <FaKey size={14} />
-          </button>
-        </div>
-      </div>
-
-      {/* Input API Key */}
-      <AnimatePresence>
-        {showKeyInput && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden bg-accent2/30 dark:bg-zinc-900/50 border-b border-accent1 dark:border-zinc-800 px-4 py-3"
-          >
-            <p className="text-xs text-gray-600 dark:text-zinc-400 mb-2 font-medium">Groq API Key (BYOK)</p>
-            <div className="flex gap-2">
-              <input
-                id="input-groq-key"
-                type="password"
-                placeholder="gsk_..."
-                value={tempKey}
-                onChange={(e) => setTempKey(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
-                className="flex-1 bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 rounded-xl px-3 py-2 text-sm outline-none border border-accent1 dark:border-zinc-850"
-              />
+          </div>
+          <div className="flex items-center gap-2">
+            {messages.length > 0 && (
               <button
-                onClick={handleSaveKey}
-                className="bg-primary text-white text-sm px-4 rounded-xl font-medium cursor-pointer"
+                onClick={() => setShowClearModal(true)}
+                className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-red-50 dark:bg-red-950/20 text-red-500 hover:bg-red-100 dark:hover:bg-red-900/40 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+                title="Hapus Chat"
               >
-                Simpan
+                <FaTrash size={14} />
               </button>
-            </div>
-            <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
-              Dapatkan API key gratis di{' '}
-              <a href="https://console.groq.com" target="_blank" rel="noreferrer" className="text-primary underline">
-                console.groq.com
-              </a>
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            )}
+            <button
+              onClick={toggleDarkMode}
+              className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+            >
+              {isDark ? <FaSun size={14} className="text-amber-500 animate-in spin-in-12 duration-300" /> : <FaMoon size={14} className="text-indigo-500 animate-in spin-in-12 duration-300" />}
+            </button>
+            <button
+              id="btn-api-key"
+              onClick={() => setShowKeyInput((v) => !v)}
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-center ${
+                groqApiKey 
+                  ? 'text-green-600 bg-green-50 dark:bg-green-950/30 border-green-100 dark:border-green-900' 
+                  : 'text-gray-400 bg-gray-50 dark:bg-zinc-900 border-gray-100 dark:border-zinc-800'
+              }`}
+            >
+              <FaKey size={14} />
+            </button>
+          </div>
+        </div>
+
+        {/* Input API Key */}
+        <AnimatePresence>
+          {showKeyInput && (
+            <motion.div
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: 'auto', opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              className="overflow-hidden bg-accent2/30 dark:bg-zinc-900/50 border-b border-accent1 dark:border-zinc-800 px-4 py-3 backdrop-blur-md"
+            >
+              <p className="text-xs text-gray-600 dark:text-zinc-400 mb-2 font-medium">Groq API Key (BYOK)</p>
+              <div className="flex gap-2">
+                <input
+                  id="input-groq-key"
+                  type="password"
+                  placeholder="gsk_..."
+                  value={tempKey}
+                  onChange={(e) => setTempKey(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleSaveKey()}
+                  className="flex-1 bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-100 rounded-xl px-3 py-2 text-sm outline-none border border-accent1 dark:border-zinc-800"
+                />
+                <button
+                  onClick={handleSaveKey}
+                  className="bg-primary text-white text-sm px-4 rounded-xl font-medium cursor-pointer"
+                >
+                  Simpan
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 dark:text-zinc-500 mt-1">
+                Dapatkan API key gratis di{' '}
+                <a href="https://console.groq.com" target="_blank" rel="noreferrer" className="text-primary underline">
+                  console.groq.com
+                </a>
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* Area pesan */}
       <div className="flex-1 overflow-y-auto px-4 py-4 pb-4 flex flex-col gap-3">
@@ -154,40 +159,13 @@ export default function AIChatPage() {
         )}
 
         {messages.map((msg, i) => (
-          <motion.div
-            key={i}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className={`relative max-w-[90%] md:max-w-[85%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
-              msg.role === 'user'
-                ? 'bg-primary text-white self-end rounded-br-sm'
-                : 'bg-white dark:bg-zinc-900 text-gray-800 dark:text-zinc-200 self-start shadow-sm border border-gray-100 dark:border-zinc-800 rounded-bl-sm group'
-            }`}
-          >
-            {msg.role === 'assistant' ? (
-              <div className="text-sm dark:text-zinc-200 
-                [&_p]:mb-2 last:[&_p]:mb-0 
-                [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-2 
-                [&_ol]:list-decimal [&_ol]:pl-5 [&_ol]:mb-2 
-                [&_li]:mb-1 
-                [&_strong]:font-bold 
-                [&_em]:italic 
-                [&_code]:bg-gray-100 dark:[&_code]:bg-zinc-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:rounded-md [&_code]:text-[13px] 
-                [&_pre]:bg-gray-100 dark:[&_pre]:bg-zinc-800 [&_pre]:p-3 [&_pre]:rounded-xl [&_pre]:mb-2 [&_pre_code]:bg-transparent [&_pre_code]:p-0"
-              >
-                <ReactMarkdown>{msg.content}</ReactMarkdown>
-                <button
-                  onClick={() => handleCopy(msg.content, i)}
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-gray-100 dark:bg-zinc-800 text-gray-500 hover:text-gray-700 dark:text-zinc-400 dark:hover:text-zinc-200 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity cursor-pointer shadow-sm"
-                  title="Salin Teks"
-                >
-                  {copiedIndex === i ? <FaCheck size={12} className="text-green-500" /> : <FaCopy size={12} />}
-                </button>
-              </div>
-            ) : (
-              <div className="whitespace-pre-wrap">{msg.content}</div>
-            )}
-          </motion.div>
+          <ChatMessage 
+            key={i} 
+            msg={msg} 
+            index={i} 
+            copiedIndex={copiedIndex} 
+            onCopy={handleCopy} 
+          />
         ))}
 
         {loading && (
@@ -210,7 +188,7 @@ export default function AIChatPage() {
       </div>
 
       {/* Input pesan */}
-      <div className="bg-white dark:bg-zinc-950 border-t border-gray-100 dark:border-zinc-900 px-4 py-3 pb-24 md:pb-4 flex gap-2">
+      <div className="sticky bottom-0 z-50 bg-white dark:bg-zinc-950 border-t border-gray-100 dark:border-zinc-900 px-4 py-3 pb-24 md:pb-4 flex gap-2">
         <div className="w-full max-w-2xl mx-auto flex gap-2">
         <input
           id="input-chat"
@@ -231,6 +209,13 @@ export default function AIChatPage() {
         </button>
         </div>
       </div>
+
+      {/* Clear Chat Modal */}
+      <ClearChatModal 
+        isOpen={showClearModal}
+        onClose={() => setShowClearModal(false)}
+        onConfirm={clearMessages}
+      />
     </div>
   );
 }

@@ -1,18 +1,27 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaTrash, FaUsers, FaSun, FaMoon } from 'react-icons/fa6';
+import { FaTrash, FaUsers, FaSun, FaMoon, FaPlus } from 'react-icons/fa6';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import useTeamStore from '../store/teamStore';
-import { formatName, getSpriteUrl } from '../utils/formatters';
-import TypeBadge from '../components/TypeBadge';
+import { formatName } from '../utils/formatters';
+import TeamSlot from '../components/TeamSlot';
 import useSettingsStore from '../store/settingsStore';
+import ConfirmModal from '../components/ConfirmModal';
+import CreateTeamModal, { TEAM_GAME_VERSIONS } from '../components/CreateTeamModal';
+import { useState } from 'react';
 
 const SLOTS = Array.from({ length: 6 });
 
 export default function TeamBuilderPage() {
-  const { team, removeFromTeam, clearTeam } = useTeamStore();
+  const { teams, activeTeamId, setActiveTeam, addTeam, removeTeam, removeFromTeam, updateTeam } = useTeamStore();
+  const getActiveTeam = useTeamStore((s) => s.getActiveTeam);
+  const activeTeam = getActiveTeam();
+  const team = activeTeam.pokemonList;
+  
   const navigate = useNavigate();
   const { isDark, toggleDarkMode } = useSettingsStore();
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   function handleRemove(pokemon) {
     removeFromTeam(pokemon.id);
@@ -22,27 +31,72 @@ export default function TeamBuilderPage() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="bg-white dark:bg-zinc-950 px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 dark:border-zinc-900 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Tim Saya</h1>
-          <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">{team.length}/6 Pokemon</p>
-        </div>
-        <div className="flex items-center gap-3">
-          {team.length > 0 && (
+      <div className="bg-white dark:bg-zinc-950 px-4 pt-10 pb-4 md:pt-6 border-b border-gray-100 dark:border-zinc-900 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex flex-col">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-zinc-100">Tim Saya</h1>
+            <p className="text-sm text-gray-400 dark:text-zinc-500 mt-0.5">{team.length}/6 Pokemon</p>
+          </div>
+          <div className="flex items-center gap-3">
             <button
-              id="btn-clear-team"
-              onClick={() => { clearTeam(); toast.success('Tim dikosongkan'); }}
-              className="text-xs text-red-400 font-medium flex items-center gap-1 cursor-pointer"
+              onClick={() => setShowCreateModal(true)}
+              className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-primary/10 text-primary hover:bg-primary/20 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+              title="Buat Tim Baru"
             >
-              <FaTrash size={11} /> Kosongkan
+              <FaPlus size={14} />
             </button>
-          )}
-          <button
-            onClick={toggleDarkMode}
-            className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center shadow-sm"
-          >
-            {isDark ? <FaSun size={14} className="text-amber-500 animate-in spin-in-12 duration-300" /> : <FaMoon size={14} className="text-indigo-500 animate-in spin-in-12 duration-300" />}
-          </button>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 bg-gray-50 dark:bg-zinc-900 text-gray-700 dark:text-zinc-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-all cursor-pointer flex items-center justify-center shadow-sm"
+            >
+              {isDark ? <FaSun size={14} className="text-amber-500 animate-in spin-in-12 duration-300" /> : <FaMoon size={14} className="text-indigo-500 animate-in spin-in-12 duration-300" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Team Selector & Settings */}
+        <div className="flex gap-2 items-center overflow-x-auto pb-1 no-scrollbar">
+          {teams.map(t => (
+            <button
+              key={t.id}
+              onClick={() => setActiveTeam(t.id)}
+              className={`px-3 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+                t.id === activeTeamId 
+                  ? 'bg-primary text-white shadow-sm' 
+                  : 'bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-zinc-400 hover:bg-gray-200 dark:hover:bg-zinc-700'
+              }`}
+            >
+              {t.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Current Team Settings */}
+        <div className="flex items-center justify-between bg-gray-50 dark:bg-zinc-900/50 p-2.5 rounded-xl border border-gray-100 dark:border-zinc-800 gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 w-full flex-1">
+            <input
+              type="text"
+              value={activeTeam.name}
+              onChange={(e) => updateTeam(activeTeam.id, { name: e.target.value })}
+              className="bg-white dark:bg-zinc-800 w-full sm:w-auto text-sm font-semibold text-gray-800 dark:text-zinc-200 px-3 py-1.5 rounded-lg outline-none border border-gray-200 dark:border-zinc-700"
+              placeholder="Nama Tim"
+            />
+            <div className="flex items-center bg-gray-100 dark:bg-zinc-800/50 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-zinc-700/50">
+              <span className="text-xs font-semibold text-gray-500 dark:text-zinc-400">
+                {TEAM_GAME_VERSIONS.find(g => g.id === activeTeam.gameVersion)?.label || 'Semua Game (Bebas)'}
+              </span>
+            </div>
+          </div>
+          
+          <div className="flex gap-2 shrink-0">
+            <button
+              onClick={() => setShowConfirmModal(true)}
+              className="p-2 text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors cursor-pointer shrink-0"
+              title="Hapus Tim"
+            >
+              <FaTrash size={14} />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -52,43 +106,12 @@ export default function TeamBuilderPage() {
             const pokemon = team[i];
             return (
               <AnimatePresence key={i} mode="popLayout">
-                {pokemon ? (
-                  <motion.div
-                    layout
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.8 }}
-                    className="bg-white dark:bg-zinc-900 rounded-2xl p-3 shadow-sm border border-gray-100 dark:border-zinc-800 flex flex-col items-center gap-2 relative"
-                  >
-                    <button
-                      onClick={() => handleRemove(pokemon)}
-                      className="absolute top-2 right-2 p-1 text-gray-300 hover:text-red-400 transition-colors cursor-pointer"
-                    >
-                      <FaTrash size={12} />
-                    </button>
-                    <img
-                      src={pokemon.sprite}
-                      alt={pokemon.name}
-                      width={72}
-                      height={72}
-                      className="drop-shadow-sm cursor-pointer"
-                      onClick={() => navigate(`/pokemon/${pokemon.id}`)}
-                    />
-                    <p className="text-sm font-semibold text-gray-800 dark:text-zinc-200">{formatName(pokemon.name)}</p>
-                    <div className="flex gap-1 flex-wrap justify-center">
-                      {pokemon.types.map((t) => <TypeBadge key={t} type={t} />)}
-                    </div>
-                  </motion.div>
-                ) : (
-                  <motion.div
-                    layout
-                    className="border-2 border-dashed border-gray-200 dark:border-zinc-800 rounded-2xl flex flex-col items-center justify-center gap-2 py-8 text-gray-300 dark:text-zinc-700 cursor-pointer hover:border-accent1 dark:hover:border-zinc-700 transition-colors"
-                    onClick={() => navigate('/')}
-                  >
-                    <FaUsers size={22} />
-                    <span className="text-xs">Tambah Pokemon</span>
-                  </motion.div>
-                )}
+                <TeamSlot 
+                  pokemon={pokemon}
+                  onRemove={handleRemove}
+                  onClickAdd={() => navigate('/', { state: { pickingForTeam: activeTeam } })}
+                  onNavigate={navigate}
+                />
               </AnimatePresence>
             );
           })}
@@ -100,6 +123,27 @@ export default function TeamBuilderPage() {
           </p>
         )}
       </div>
+
+      <ConfirmModal 
+        isOpen={showConfirmModal}
+        onClose={() => setShowConfirmModal(false)}
+        onConfirm={() => {
+          removeTeam(activeTeam.id);
+          toast.success('Tim dihapus');
+        }}
+        title="Hapus Tim"
+        message={`Apakah Anda yakin ingin menghapus tim "${activeTeam.name}"? Semua pokemon di tim ini akan dihapus.`}
+        confirmText="Ya, Hapus Tim"
+      />
+
+      <CreateTeamModal 
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        onCreate={(name, gameVersion) => {
+          addTeam(name, gameVersion);
+          toast.success('Tim baru berhasil dibuat!');
+        }}
+      />
     </div>
   );
 }

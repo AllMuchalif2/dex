@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { formatName } from '../utils/formatters';
 
-const VERSION_TO_VERSION_GROUP = {
+export const VERSION_TO_VERSION_GROUP = {
   'red': 'red-blue', 'blue': 'red-blue', 'yellow': 'yellow',
   'gold': 'gold-silver', 'silver': 'gold-silver', 'crystal': 'crystal',
   'ruby': 'ruby-sapphire', 'sapphire': 'ruby-sapphire', 'emerald': 'emerald',
